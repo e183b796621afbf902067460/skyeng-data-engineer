@@ -142,7 +142,7 @@ def liquidityPoolOverview():
             for aOverview in overview:
                 db_engine.execute(query.format(
                     i,
-                    aOverview['symbo'],
+                    aOverview['symbol'],
                     aOverview['reserve'],
                     aOverview['price']))
 
