@@ -2,9 +2,6 @@ import pendulum
 from airflow.decorators import dag, task
 
 
-overviewType: str = 'liquidity-pool-overview'
-
-
 @dag(
     schedule_interval='*/5 * * * *',
     start_date=pendulum.datetime(2022, 1, 1, tz="UTC"),
@@ -13,19 +10,8 @@ overviewType: str = 'liquidity-pool-overview'
 def liquidityPoolOverview():
 
     @task()
-    def getRows():
-        import os
-        from urllib.parse import quote_plus
-
-        from sqlalchemy import create_engine
-
-        db_address = os.getenv('DB_ADDRESS', '')
-        db_user = os.getenv('DB_USER', '')
-        db_password = quote_plus(os.getenv('DB_PASSWORD', ''))
-        db_name = os.getenv('DB_NAME', '')
-
-        db_url = f'postgresql://{db_user}:{db_password}@{db_address}/{db_name}'
-        db_engine = create_engine(db_url)
+    def getRows(overviewType: str = 'liquidity-pool-overview'):
+        from cfg.clients import reader
 
         query = f'''
             SELECT
@@ -43,25 +29,18 @@ def liquidityPoolOverview():
                 l_addresses_protocols_chains.l_address_protocol_chain_prefix = '{overviewType}'
             '''
 
-        rows = db_engine.execute(query).fetchall()
-        return [(row.l_address_protocol_chain_id, row.h_address, row.h_protocol_name, row.h_network_name) for row in rows]
+        return [(row.l_address_protocol_chain_id, row.h_address, row.h_protocol_name, row.h_network_name) for row in reader.execute(query=query)]
 
     @task()
-    def getOverviews(rows):
+    def getOverviews(rows, overviewType: str = 'liquidity-pool-overview'):
         import logging
 
-        from head.consts.chains.const import Chains
         from head.bridge.configurator import BridgeConfigurator
 
         from overviews.abstracts.fabric import overviewAbstractFabric
         from providers.abstracts.fabric import providerAbstractFabric
 
         from traders.head.trader import headTrader
-
-        chains: dict = {
-            'ETH': Chains.ETH,
-            'BSC': Chains.BSC
-        }
 
         overviews: dict = dict()
 
@@ -72,7 +51,7 @@ def liquidityPoolOverview():
             provider = BridgeConfigurator(
                 abstractFabric=providerAbstractFabric,
                 fabricKey='http',
-                productKey=chains[chain])\
+                productKey=chain)\
                 .produceProduct()
 
             overview = BridgeConfigurator(
@@ -111,40 +90,20 @@ def liquidityPoolOverview():
 
     @task()
     def loadOverviews(overviews):
-        import os
-        from urllib.parse import quote_plus
+        from cfg.clients import writer
 
-        from sqlalchemy import create_engine
-
-        db_address = os.getenv('DB_ADDRESS', 'localhost')
-        db_user = os.getenv('DB_USER', 'username')
-        db_password = quote_plus(os.getenv('DB_PASSWORD', '111222'))
-        db_name = os.getenv('DB_NAME', 'dwh')
-
-        db_url = f'postgresql://{db_user}:{db_password}@{db_address}/{db_name}'
-        db_engine = create_engine(db_url)
-
-        query = '''
-            insert into pit_liquidity_pool_overview (
+        raw = '''
+            INSERT INTO pit_liquidity_pool_overview (
                 l_address_protocol_chain_id,
                 pit_token_symbol,
                 pit_token_reserve,
                 pit_token_price
-            )
-            values (
-                {},
-                '{}',
-                {},
-                {}
-            )
+            ) VALUES ({}, '{}', {}, {})
             '''
         for i, overview in overviews.items():
             for aOverview in overview:
-                db_engine.execute(query.format(
-                    i,
-                    aOverview['symbol'],
-                    aOverview['reserve'],
-                    aOverview['price']))
+                query = raw.format(i, aOverview['symbol'], aOverview['reserve'], aOverview['price'])
+                writer.execute(query=query)
 
     rows = getRows()
     overviews = getOverviews(rows=rows)
