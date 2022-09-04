@@ -44,7 +44,6 @@ def liquidityPoolOverview():
 
         overviews: dict = dict()
 
-        # prepare
         for row in rows:
             i, address, protocol, chain = row[0], row[1], row[2], row[3]
 
@@ -66,22 +65,13 @@ def liquidityPoolOverview():
                 .setTrader(trader=headTrader)\
                 .create()
 
-            overviews[i] = overview  # {1: CurveLiquidityPoolOverview(), ...}
+            overviews[i] = overview.getOverview()
 
             logging.info(f'Current Overview for {protocol} is {overview}: {overview.address}')
 
-        # extract
-        futures: dict = dict()
-        for i, overview in overviews.items():
-            future = overview.getOverview()
-            futures[i] = future
-
-            logging.info(f'Current Future object is {future}')
-
-        # result
         results: dict = dict()
-        for i, future in futures.items():
-            result = future.result()
+        for i, overview in overviews.items():
+            result = overview.result()
             results[i] = result
 
             logging.info(f'Current Result is {result}')
