@@ -1,4 +1,5 @@
 import pendulum
+import datetime
 from airflow.decorators import dag
 
 configs: dict = {
@@ -14,7 +15,13 @@ for config_name, config in configs.items():
         dag_id=dag_id,
         start_date=pendulum.datetime(2022, 1, 1, tz="UTC"),
         schedule_interval='*/5 * * * *',
-        catchup=False
+        catchup=False,
+        default_args={
+            'retries': 1,
+            'execution_timeout': datetime.timedelta(minutes=5),
+            'retry_delay': datetime.timedelta(seconds=30),
+            'max_active_runs': 1
+        }
     )
     def dynamic_generated_dag():
         from funcs.poolOverviews.getRows.task import getRows
