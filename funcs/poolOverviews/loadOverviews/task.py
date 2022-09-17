@@ -34,8 +34,10 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
                     pit_token_symbol,
                     pit_token_reserve_size,
                     pit_token_borrow_size,
-                    pit_token_price
-                ) VALUES ({}, '{}', {}, {}, {})
+                    pit_token_price,
+                    pit_token_deposit_apy,
+                    pit_token_borrow_apy
+                ) VALUES ({}, '{}', {}, {}, {}, {}, {})
                 '''
         }
     }
@@ -44,9 +46,14 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
     for i, overview in overviews.items():
         for aOverview in overview:
             if overviewType in ['liquidity-pool-overview', 'staking-pool-overview']:
-                values: list = [table, int(i), aOverview['symbol'], aOverview['reserve'], aOverview['price']]
+                values: list = [
+                    table, int(i), aOverview['symbol'], aOverview['reserve'], aOverview['price']
+                ]
             elif overviewType in ['lending-pool-overview']:
-                values: list = [table, int(i), aOverview['symbol'], aOverview['reserve'], aOverview['borrow'], aOverview['price']]
+                values: list = [
+                    table, int(i), aOverview['symbol'], aOverview['reserve'], aOverview['borrow'], aOverview['price'],
+                    aOverview['depositAPY'], aOverview['borrowAPY']
+                ]
 
             query = queries[overviewType]['query'].format(*values)
             writer.execute(query=query)
