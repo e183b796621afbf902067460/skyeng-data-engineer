@@ -14,7 +14,9 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
                     pit_token_symbol,
                     pit_token_reserve,
                     pit_token_price
-                ) VALUES ({}, '{}', {}, {})
+                ) VALUES (
+                    {}, '{}', {}, {}
+                )
                 '''
         },
         'staking-pool-overview': {
@@ -24,7 +26,9 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
                     pit_token_symbol,
                     pit_token_reserve,
                     pit_token_price
-                ) VALUES ({}, '{}', {}, {})
+                ) VALUES (
+                    {}, '{}', {}, {}
+                )
                 '''
         },
         'lending-pool-overview': {
@@ -37,7 +41,9 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
                     pit_token_price,
                     pit_token_deposit_apy,
                     pit_token_borrow_apy
-                ) VALUES ({}, '{}', {}, {}, {}, {}, {})
+                ) VALUES (
+                    {}, '{}', {}, {}, {}, {}, {}
+                )
                 '''
         }
     }
