@@ -3,9 +3,9 @@ import datetime
 from airflow.decorators import dag
 
 configs: dict = {
-    'liquidity_pool_overview': {'overviewType': 'liquidity-pool-overview'},
-    'staking_pool_overview': {'overviewType': 'staking-pool-overview'},
-    'lending_pool_overview': {'overviewType': 'lending-pool-overview'}
+    'dex_pool_overview': {'protocolCategory': 'DEX'},
+    'staking_pool_overview': {'protocolCategory': 'Staking'},
+    'lending_pool_overview': {'protocolCategory': 'Lending'}
 }
 
 for config_name, config in configs.items():
@@ -24,12 +24,12 @@ for config_name, config in configs.items():
         }
     )
     def dynamic_generated_dag():
-        from funcs.poolOverviews.getRows.task import getRows
-        from funcs.poolOverviews.getOverviews.task import getOverviews
-        from funcs.poolOverviews.loadOverviews.task import loadOverviews
+        from tasks.getRowsForOverviews import task as getRowsForOverviews
+        from tasks.getOverviews import task as getOverviews
+        from tasks.loadOverviews import task as loadOverviews
 
-        rows = getRows(overviewType=config['overviewType'])
-        overviews = getOverviews(rows=rows, overviewType=config['overviewType'])
-        loadOverviews(overviews=overviews, overviewType=config['overviewType'])
+        rows = getRowsForOverviews(protocolCategory=config['protocolCategory'])
+        overviews = getOverviews(rows=rows, protocolCategory=config['protocolCategory'])
+        loadOverviews(overviews=overviews, protocolCategory=config['protocolCategory'])
 
     globals()[dag_id] = dynamic_generated_dag()

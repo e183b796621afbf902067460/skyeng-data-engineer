@@ -3,14 +3,14 @@ from airflow.decorators import task
 
 
 @task()
-def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str) -> None:
+def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], protocolCategory: str) -> None:
     from cfg.clients import writer
 
     queries: dict = {
-        'liquidity-pool-overview': {
+        'DEX': {
             'query': '''
                 INSERT INTO {} (
-                    l_address_protocol_chain_id,
+                    l_address_protocol_category_chain_id,
                     pit_token_symbol,
                     pit_token_reserve,
                     pit_token_price
@@ -19,10 +19,10 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
                 )
                 '''
         },
-        'staking-pool-overview': {
+        'Staking': {
             'query': '''
                 INSERT INTO {} (
-                    l_address_protocol_chain_id,
+                    l_address_protocol_category_chain_id,
                     pit_token_symbol,
                     pit_token_reserve,
                     pit_token_price
@@ -31,10 +31,10 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
                 )
                 '''
         },
-        'lending-pool-overview': {
+        'Lending': {
             'query': '''
                 INSERT INTO {} (
-                    l_address_protocol_chain_id,
+                    l_address_protocol_category_chain_id,
                     pit_token_symbol,
                     pit_token_reserve_size,
                     pit_token_borrow_size,
@@ -48,18 +48,20 @@ def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], overviewType: str)
         }
     }
 
-    table: str = 'pit_' + overviewType.replace('-', '_')
+    table: str = 'pit_' + protocolCategory.lower() + '_pool_overview'
     for i, overview in overviews.items():
         for aOverview in overview:
-            if overviewType in ['liquidity-pool-overview', 'staking-pool-overview']:
+            if protocolCategory in ['DEX', 'Staking']:
                 values: list = [
                     table, int(i), aOverview['symbol'], aOverview['reserve'], aOverview['price']
                 ]
-            elif overviewType in ['lending-pool-overview']:
+            elif protocolCategory in ['Lending']:
                 values: list = [
                     table, int(i), aOverview['symbol'], aOverview['reserve'], aOverview['borrow'], aOverview['price'],
                     aOverview['depositAPY'], aOverview['borrowAPY']
                 ]
+            else:
+                values: list = list()
 
-            query = queries[overviewType]['query'].format(*values)
+            query = queries[protocolCategory]['query'].format(*values)
             writer.execute(query=query)
