@@ -3,7 +3,7 @@ from airflow.decorators import task
 
 
 @task()
-def task(protocolCategory: str) -> List[tuple]:
+def getRowsForOverviews(protocolCategory: str) -> List[tuple]:
     from cfg.clients import reader
 
     query = f'''

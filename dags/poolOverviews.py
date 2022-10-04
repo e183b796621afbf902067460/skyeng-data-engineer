@@ -3,13 +3,22 @@ import datetime
 from airflow.decorators import dag
 
 configs: dict = {
-    'dex_pool_overview': {'protocolCategory': 'DEX'},
-    'staking_pool_overview': {'protocolCategory': 'Staking'},
-    'lending_pool_overview': {'protocolCategory': 'Lending'}
+    'dex_pool_overview':
+        {
+            'protocolCategory': 'DEX'
+        },
+    'staking_pool_overview':
+        {
+            'protocolCategory': 'Staking'
+        },
+    'lending_pool_overview':
+        {
+            'protocolCategory': 'Lending'
+        }
 }
 
-for config_name, config in configs.items():
-    dag_id: str = f'dynamic_generated_{config_name}_dag'
+for dag_name, config in configs.items():
+    dag_id: str = f'dynamic_generated_{dag_name}_dag'
 
     @dag(
         dag_id=dag_id,
@@ -24,9 +33,9 @@ for config_name, config in configs.items():
         }
     )
     def dynamic_generated_dag():
-        from tasks.getRowsForOverviews import task as getRowsForOverviews
-        from tasks.getOverviews import task as getOverviews
-        from tasks.loadOverviews import task as loadOverviews
+        from tasks.getRowsForOverviews import getRowsForOverviews
+        from tasks.getOverviews import getOverviews
+        from tasks.loadOverviews import loadOverviews
 
         rows = getRowsForOverviews(protocolCategory=config['protocolCategory'])
         overviews = getOverviews(rows=rows, protocolCategory=config['protocolCategory'])

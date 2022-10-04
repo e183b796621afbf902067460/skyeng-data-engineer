@@ -3,7 +3,7 @@ from airflow.decorators import task
 
 
 @task()
-def task(rows: List[tuple], protocolCategory: str) -> Dict[int, List[Dict[str, Any]]]:
+def getOverviews(rows: List[tuple], protocolCategory: str) -> Dict[int, List[Dict[str, Any]]]:
     import logging
 
     from head.bridge.configurator import BridgeConfigurator
