@@ -46,7 +46,7 @@ ENV MATIC_HTTP_PROVIDER=""
 ENV OPT_HTTP_PROVIDER=""
 ```
 
-- Set credentials in `docker-compose.yaml`
+- Set credentials in `docker-compose.yaml` and configure ports.
 
 # Docker
 
