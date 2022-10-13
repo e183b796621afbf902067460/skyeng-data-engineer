@@ -52,12 +52,17 @@ ENV OPT_HTTP_PROVIDER=""
 
 - Run docker commands (`sudo`):
 ```
+docker build -t airflow .
+```
+
+- Compose:
+```
 docker-compose up airflow-init
 ```
 
 - Then:
 ```
-docker-compose up
+docker-compose up -d
 ```
 ---
 Afer running those command we can check existing containers by typing:
