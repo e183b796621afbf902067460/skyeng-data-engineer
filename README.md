@@ -52,7 +52,7 @@ ENV OPT_HTTP_PROVIDER=""
 
 - Run docker commands (`sudo`):
 ```
-docker build -t airflow .
+docker build -t defi_airflow .
 ```
 
 - Compose:
