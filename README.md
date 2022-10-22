@@ -65,7 +65,7 @@ docker-compose up airflow-init
 docker-compose up -d
 ```
 ---
-Afer running those command we can check existing containers by typing:
+After running those command we can check existing containers by typing:
 ```
 docker ps
 ```
