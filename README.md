@@ -31,12 +31,6 @@ echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
 
 - Set the __ENV__ variables in `Dockerfile`:
 ```
-ENV DB_ADDRESS=""
-ENV DB_USER=""
-ENV DB_PASSWORD=""
-ENV DB_NAME=""
-```
-```
 ENV ETH_HTTP_PROVIDER=""
 ENV BSC_HTTP_PROVIDER=""
 ENV AVAX_HTTP_PROVIDER=""
@@ -46,7 +40,14 @@ ENV MATIC_HTTP_PROVIDER=""
 ENV OPT_HTTP_PROVIDER=""
 ```
 
-- Set credentials in `docker-compose.yaml` and configure ports.
+- Set credentials in `docker-compose.yaml` and configure ports, by default:
+```
+DB_ADDRESS: orm
+DB_USER: airflow
+DB_PASSWORD: airflow
+DB_NAME: dwh
+```
+
 
 # Docker
 
@@ -82,4 +83,14 @@ docker exec -it <CONTAINER ID> bash
 And run inside container:
 ```
 pytest fixtures/test_.py
+```
+
+# Exit
+- To stop all running containers:
+```
+docker stop $(docker ps -a -q)
+```
+- And remove it all:
+```
+docker rm $(docker ps -a -q)
 ```
