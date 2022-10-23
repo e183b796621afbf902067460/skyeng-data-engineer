@@ -52,15 +52,34 @@ ENV OPT_HTTP_PROVIDER=""
 
 - Run docker commands (`sudo`):
 ```
+docker build -t defi_airflow .
+```
+
+- Compose:
+```
 docker-compose up airflow-init
 ```
 
 - Then:
 ```
-docker-compose up
+docker-compose up -d
 ```
----
-Afer running those command we can check existing containers by typing:
+
+# Fixtures
+
+Additional fixtures can be added to check DAGs success rate.
+
+- See existing containers:
 ```
 docker ps
+```
+
+- Copy `airflow-worker's` \<CONTAINER ID> and jump into it:
+```
+docker exec -it <CONTAINER ID> bash
+```
+
+And run inside container:
+```
+pytest fixtures/test_.py
 ```
