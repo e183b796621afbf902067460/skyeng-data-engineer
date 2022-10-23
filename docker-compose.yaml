@@ -44,7 +44,7 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.4.1}
+  image: defi_airflow
   # build: .
   environment:
     &airflow-common-env
@@ -63,12 +63,16 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ./requirements.txt:/opt/airflow/requirements.txt
+    - ./fixtures:/opt/airflow/fixtures
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
     redis:
       condition: service_healthy
     postgres:
+      condition: service_healthy
+    orm:
       condition: service_healthy
 
 services:
@@ -82,6 +86,20 @@ services:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+    restart: always
+
+  orm:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: dwh
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/orm
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 5s
       retries: 5
     restart: always
@@ -142,7 +160,13 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
+      DB_ADDRESS: orm
+      DB_USER: airflow
+      DB_PASSWORD: airflow
+      DB_NAME: dwh
     restart: always
+    links:
+      - orm
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:

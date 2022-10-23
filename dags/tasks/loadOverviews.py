@@ -4,7 +4,7 @@ from airflow.decorators import task
 
 @task()
 def loadOverviews(overviews: Dict[int, List[Dict[str, Any]]], protocolCategory: str) -> None:
-    from cfg.clients import writer
+    from conf.clients import writer
 
     queries: dict = {
         'DEX': {
