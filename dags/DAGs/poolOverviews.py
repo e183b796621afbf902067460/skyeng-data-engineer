@@ -7,6 +7,10 @@ configs: dict = {
         {
             'protocolCategory': 'DEX'
         },
+    'farming_pool_overview':
+        {
+            'protocolCategory': 'Farming'
+        },
     'staking_pool_overview':
         {
             'protocolCategory': 'Staking'
