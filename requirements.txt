@@ -141,3 +141,10 @@ wrapt==1.14.1
 WTForms==2.3.3
 yarl==1.8.1
 zipp==3.8.1
+
+git+https://github.com/e183b796621afbf902067460/defi-head-core.git#egg=defi-head-core
+git+https://github.com/e183b796621afbf902067460/defi-dwh-orm.git#egg=defi-dwh-orm
+git+https://github.com/e183b796621afbf902067460/defi-contracts-evm.git#egg=defi-contracts-evm
+git+https://github.com/e183b796621afbf902067460/defi-providers-fabric.git#egg=defi-providers-fabric
+git+https://github.com/e183b796621afbf902067460/defi-traders-composite.git#egg=defi-traders-composite
+git+https://github.com/e183b796621afbf902067460/defi-overviews-fabric.git#egg=defi-overviews-fabric
