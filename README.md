@@ -75,14 +75,9 @@ Additional fixtures can be added to check DAGs success rate.
 docker ps
 ```
 
-- Copy `airflow-worker's` \<CONTAINER ID> and jump into it:
+- Copy `airflow-worker's` \<CONTAINER ID> and run inside of it:
 ```
-docker exec -it <CONTAINER ID> bash
-```
-
-And run inside container:
-```
-pytest fixtures/test_.py
+docker exec -it <CONTAINER ID> pytest fixtures/test_.py
 ```
 
 # Exit
