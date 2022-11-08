@@ -3,7 +3,7 @@ from airflow.decorators import task
 
 
 @task()
-def getOverviews(rows: List[tuple], protocolCategory: str) -> Dict[int, List[Dict[str, Any]]]:
+def getOverviews(rows: List[tuple], fabricKey: str, overviewType: str) -> Dict[int, List[Dict[str, Any]]]:
     import logging
 
     from head.bridge.configurator import BridgeConfigurator
@@ -13,10 +13,15 @@ def getOverviews(rows: List[tuple], protocolCategory: str) -> Dict[int, List[Dic
 
     from traders.head.trader import headTrader
 
+    isExposure: bool = 'allocation' == overviewType.lower() or 'borrow' == overviewType.lower() or 'incentive' == overviewType.lower()
+
     futures: dict = dict()
 
     for row in rows:
-        i, address, protocol, chain = row[0], row[1], row[2], row[3]
+        if isExposure:
+            i, poolAddress, walletAddress, protocol, chain = row[0], row[1], row[2], row[3], row[4]
+        else:
+            i, poolAddress, protocol, chain = row[0], row[1], row[2], row[3]
 
         provider = BridgeConfigurator(
             abstractFabric=providerAbstractFabric,
@@ -26,16 +31,19 @@ def getOverviews(rows: List[tuple], protocolCategory: str) -> Dict[int, List[Dic
 
         handler = BridgeConfigurator(
             abstractFabric=overviewAbstractFabric,
-            fabricKey=f'{protocolCategory.lower()}-pool-overview',
+            fabricKey=f'{fabricKey.lower()}',
             productKey=protocol.lower()
         ) \
             .produceProduct()() \
-            .setAddress(address=address) \
+            .setAddress(address=poolAddress) \
             .setProvider(provider=provider) \
             .setTrader(trader=headTrader) \
             .create()
 
-        futures[i] = handler.getOverview()
+        if isExposure:
+            futures[i] = handler.getOverview(address=walletAddress)
+        else:
+            futures[i] = handler.getOverview()
 
         logging.info(f'Current Overview for ({chain}){protocol} is {handler}: {handler.address}')
 

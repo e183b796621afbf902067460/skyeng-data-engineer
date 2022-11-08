@@ -87,7 +87,7 @@ mdurl==0.1.2
 multiaddr==0.0.9
 multidict==6.0.2
 netaddr==0.8.0
-numpy==1.23.2
+numpy==1.21.2
 packaging==21.3
 parsimonious==0.8.1
 pathspec==0.9.0
@@ -142,9 +142,3 @@ WTForms==2.3.3
 yarl==1.8.1
 zipp==3.8.1
 
-git+https://github.com/e183b796621afbf902067460/defi-head-core.git#egg=defi-head-core
-git+https://github.com/e183b796621afbf902067460/defi-dwh-orm.git#egg=defi-dwh-orm
-git+https://github.com/e183b796621afbf902067460/defi-contracts-evm.git#egg=defi-contracts-evm
-git+https://github.com/e183b796621afbf902067460/defi-providers-fabric.git#egg=defi-providers-fabric
-git+https://github.com/e183b796621afbf902067460/defi-traders-composite.git#egg=defi-traders-composite
-git+https://github.com/e183b796621afbf902067460/defi-overviews-fabric.git#egg=defi-overviews-fabric
