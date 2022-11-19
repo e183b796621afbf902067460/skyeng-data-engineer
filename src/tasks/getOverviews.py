@@ -3,7 +3,12 @@ from airflow.decorators import task
 
 
 @task()
-def getOverviews(rows: List[tuple], fabricKey: str, overviewType: str) -> Dict[int, List[Dict[str, Any]]]:
+def getOverviews(
+        rows: List[tuple],
+        fabricKey: str,
+        overviewType: str,
+        exposureTypes: list
+) -> Dict[int, List[Dict[str, Any]]]:
     import logging
 
     from head.bridge.configurator import BridgeConfigurator
@@ -13,12 +18,10 @@ def getOverviews(rows: List[tuple], fabricKey: str, overviewType: str) -> Dict[i
 
     from traders.head.trader import headTrader
 
-    isExposure: bool = 'allocation' == overviewType.lower() or 'borrow' == overviewType.lower() or 'incentive' == overviewType.lower()
-
     futures: dict = dict()
 
     for row in rows:
-        if isExposure:
+        if overviewType.lower() in exposureTypes:
             i, poolAddress, walletAddress, protocol, chain = row[0], row[1], row[2], row[3], row[4]
         else:
             i, poolAddress, protocol, chain = row[0], row[1], row[2], row[3]
@@ -40,7 +43,7 @@ def getOverviews(rows: List[tuple], fabricKey: str, overviewType: str) -> Dict[i
             .setTrader(trader=headTrader) \
             .create()
 
-        if isExposure:
+        if overviewType.lower() in exposureTypes:
             futures[i] = handler.getOverview(address=walletAddress)
         else:
             futures[i] = handler.getOverview()
