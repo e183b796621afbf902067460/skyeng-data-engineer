@@ -56,18 +56,3 @@ conf: dict = {
         }
     }
 }
-
-
-import jinja2
-
-params: dict = {
-        'h_protocol_category_name': 'DEX'
-    }
-
-q: str = conf['DEX']['types']['pool']['query']
-
-j = jinja2.Environment()
-template = j.from_string(q)
-r = template.render(params)
-
-print(r)
