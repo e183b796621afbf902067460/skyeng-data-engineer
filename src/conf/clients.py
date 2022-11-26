@@ -1,5 +1,5 @@
-from orm.clients.reader.client import DBReaderClient
-from orm.clients.writer.client import DBWriterClient
+from head.db.reader.client import DBReaderClient
+from head.db.writer.client import DBWriterClient
 
 from src.conf.engine import db_engine
 
