@@ -79,6 +79,18 @@ docker-compose up airflow-init
 ```
 docker-compose up -d
 ```
+`Result will be at` [http://0.0.0.0:8080](http://0.0.0.0:8080)
+
+__By default__:
+
+- Username
+```
+airflow
+```
+- Password
+```
+airflow
+```
 
 # Fixtures
 
