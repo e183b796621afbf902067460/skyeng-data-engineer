@@ -59,13 +59,36 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    PYTHONPATH: "dwh:${PYTHONPATH}"
+
+    PYTHONPATH: "airflow:${PYTHONPATH}"
+
+    POSTGRES_HOST: orm
+    POSTGRES_USER: defi_management
+    POSTGRES_PASSWORD: defi_management
+    POSTGRES_DB: defi_management
+
+    CLICKHOUSE_HOST: dwh
+    CLICKHOUSE_DB: defi_management
+    CLICKHOUSE_USER: defi_management
+    CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    CLICKHOUSE_PASSWORD: defi_management
+
+    ETH_HTTP_PROVIDER: https://rpc.ankr.com/eth
+    BSC_HTTP_PROVIDER: https://rpc.ankr.com/bsc
+    AVAX_HTTP_PROVIDER: https://rpc.ankr.com/avalanche
+    ARB_HTTP_PROVIDER: https://rpc.ankr.com/arbitrum
+    FTM_HTTP_PROVIDER: https://rpc.ankr.com/fantom
+    MATIC_HTTP_PROVIDER: https://rpc.ankr.com/polygon
+    OPT_HTTP_PROVIDER: https://rpc.ankr.com/optimism
+
+    AIRFLOW_CONN_POSTGRES_DEFI_MANAGEMENT: postgresql://defi_management:defi_management@orm/defi_management
+
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./fixtures:/opt/airflow/fixtures
-    - ./src:/opt/airflow/src
+    - ./dwh:/opt/airflow/dwh
+    - ./orm:/opt/airflow/orm
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -75,8 +98,11 @@ x-airflow-common:
       condition: service_healthy
     orm:
       condition: service_healthy
+    dwh:
+      condition: service_healthy
 
 services:
+
   postgres:
     image: postgres:13
     environment:
@@ -90,20 +116,36 @@ services:
       interval: 5s
       retries: 5
     restart: always
+    networks:
+      - defi_management_network
 
   orm:
     image: postgres:13
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: dwh
+      <<: *airflow-common-env
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/orm
+      - ./orm/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 5s
       retries: 5
     restart: always
+    networks:
+      - defi_management_network
+
+  dwh:
+    image: clickhouse/clickhouse-server
+    environment:
+      <<: *airflow-common-env
+    ports:
+      - 8123:8123
+    volumes:
+      - ./dwh/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+    restart: always
+    networks:
+      - defi_management_network
 
   redis:
     image: redis:latest
@@ -115,6 +157,8 @@ services:
       timeout: 30s
       retries: 50
     restart: always
+    networks:
+      - defi_management_network
 
   airflow-webserver:
     <<: *airflow-common
@@ -131,6 +175,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - defi_management_network
 
   airflow-scheduler:
     <<: *airflow-common
@@ -145,6 +191,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - defi_management_network
 
   airflow-worker:
     <<: *airflow-common
@@ -161,17 +209,14 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
-      DB_ADDRESS: orm
-      DB_USER: airflow
-      DB_PASSWORD: airflow
-      DB_NAME: dwh
+
     restart: always
-    links:
-      - orm
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - defi_management_network
 
   airflow-triggerer:
     <<: *airflow-common
@@ -186,6 +231,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - defi_management_network
 
   airflow-init:
     <<: *airflow-common
@@ -264,6 +311,8 @@ services:
     user: "0:0"
     volumes:
       - .:/sources
+    networks:
+      - defi_management_network
 
   airflow-cli:
     <<: *airflow-common
@@ -277,6 +326,8 @@ services:
       - bash
       - -c
       - airflow
+    networks:
+      - defi_management_network
 
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
@@ -298,6 +349,11 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - defi_management_network
 
 volumes:
   postgres-db-volume:
+
+networks:
+  defi_management_network:
