@@ -21,7 +21,7 @@ cd defi-airflow/
 
 - Create requirement folders:
 ```
-mkdir ./logs ./plugins
+mkdir ./logs
 ```
 
 - Put into `.env` permissions data:
@@ -29,25 +29,39 @@ mkdir ./logs ./plugins
 echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
 ```
 
-- Set the __ENV__ variables in `Dockerfile`:
-```
-ENV ETH_HTTP_PROVIDER=""
-ENV BSC_HTTP_PROVIDER=""
-ENV AVAX_HTTP_PROVIDER=""
-ENV ARB_HTTP_PROVIDER=""
-ENV FTM_HTTP_PROVIDER=""
-ENV MATIC_HTTP_PROVIDER=""
-ENV OPT_HTTP_PROVIDER=""
-```
+- Set the __ENV__ variables in `docker-compose.yaml`:
+  
+  - Providers environment variables in [airflow-common-env](https://github.com/e183b796621afbf902067460/defi-airflow/blob/master/docker-compose.yaml#L50) service, by default:
+ 
+    ```
+    ETH_HTTP_PROVIDER: https://rpc.ankr.com/eth
+    BSC_HTTP_PROVIDER: https://rpc.ankr.com/bsc
+    AVAX_HTTP_PROVIDER: https://rpc.ankr.com/avalanche
+    ARB_HTTP_PROVIDER: https://rpc.ankr.com/arbitrum
+    FTM_HTTP_PROVIDER: https://rpc.ankr.com/fantom
+    MATIC_HTTP_PROVIDER: https://rpc.ankr.com/polygon
+    OPT_HTTP_PROVIDER: https://rpc.ankr.com/optimism
+    ```
 
-- Set credentials in `docker-compose.yaml` and configure ports, by default:
-```
-DB_ADDRESS: orm
-DB_USER: airflow
-DB_PASSWORD: airflow
-DB_NAME: dwh
-```
-
+  - ClickHouse environment variables in [airflow-common-env]() service, by default:
+    ```
+    CLICKHOUSE_HOST: dwh
+    CLICKHOUSE_DB: defi_management
+    CLICKHOUSE_USER: defi_management
+    CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    CLICKHOUSE_PASSWORD: defi_management
+    ```
+  - PostgreSQL environment variables in [airflow-common-env](https://github.com/e183b796621afbf902067460/defi-airflow/blob/master/docker-compose.yaml#L50) service, by default:
+    ```
+    POSTGRES_HOST: orm
+    POSTGRES_USER: defi_management
+    POSTGRES_PASSWORD: defi_management
+    POSTGRES_DB: defi_management
+    ```
+  - PostgreSQL connection ID in [airflow-common-env](https://github.com/e183b796621afbf902067460/defi-airflow/blob/master/docker-compose.yaml#L50) service, by default:
+    ```
+    AIRFLOW_CONN_POSTGRES_DEFI_MANAGEMENT: postgresql://defi_management:defi_management@orm/defi_management
+    ```
 
 # Docker
 
@@ -56,12 +70,12 @@ DB_NAME: dwh
 docker build -t defi_airflow .
 ```
 
-- Compose:
+- Compose `airflow-init`:
 ```
 docker-compose up airflow-init
 ```
 
-- Then:
+- Run docker compose:
 ```
 docker-compose up -d
 ```
@@ -77,7 +91,7 @@ docker ps
 
 - Copy `airflow-worker's` \<CONTAINER ID> and run inside of it:
 ```
-docker exec -it <CONTAINER ID> pytest fixtures/test_.py
+docker exec -it <CONTAINER ID> pytest orm/_fixtures/conftest.py
 ```
 
 # Exit
