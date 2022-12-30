@@ -29,7 +29,7 @@ for protocolCategory, fabrics in conf.items():
         ) as dag:
             pools = PostgresWeb3ExecuteOperator(
                 task_id=f'extract_{re.sub("-", "_", key["fabricKey"])}_task',
-                postgres_conn_id='postgres_backend',
+                postgres_conn_id='postgres_defi_management',
                 sql='sql/select_all_pools.sql',
                 params={
                     'overview_type': overviewType,

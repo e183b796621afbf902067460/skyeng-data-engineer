@@ -4,16 +4,15 @@ from sqlalchemy.orm import Session
 
 import os
 from urllib.parse import quote_plus
-from functools import lru_cache
 
 from head.interfaces.db.settings.interface import ISettings
 
 
 class DWHSettings(ISettings):
-    DB_ADDRESS = os.getenv('DB_ADDRESS', '')
-    DB_USER = os.getenv('DB_USER', '')
-    DB_PASSWORD = quote_plus(os.getenv('DB_PASSWORD', ''))
-    DB_NAME = os.getenv('DB_NAME', '')
+    DB_ADDRESS = os.getenv('CLICKHOUSE_HOST', '')
+    DB_USER = os.getenv('CLICKHOUSE_USER', '')
+    DB_PASSWORD = quote_plus(os.getenv('CLICKHOUSE_PASSWORD', ''))
+    DB_NAME = os.getenv('CLICKHOUSE_DB', '')
 
     DB_URL = f'clickhouse://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}/{DB_NAME}'
 
@@ -26,7 +25,6 @@ class DWHSettings(ISettings):
             s.close()
 
     @classmethod
-    @lru_cache
     def get_engine(cls) -> Engine:
         return create_engine(cls.get_uri())
 
