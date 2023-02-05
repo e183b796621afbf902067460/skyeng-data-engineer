@@ -10,7 +10,7 @@ services:
       - c3d3/.env
     command: "dagit -w workspace.yaml -h 0.0.0.0 -p 3000"
     depends_on:
-      - c3d3-postgres
+      - c3d3-dagster-postgres
     restart: always
 
   c3d3-dagster-daemon:
@@ -21,7 +21,7 @@ services:
       - c3d3/.env
     command: "dagster-daemon run -w workspace.yaml"
     depends_on:
-      - c3d3-postgres
+      - c3d3-dagster-postgres
     restart: always
 
   c3d3-dagster-postgres:
