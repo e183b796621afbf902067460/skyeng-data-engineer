@@ -1,6 +1,6 @@
 services:
 
-  c3d3-dagit:
+  c3d3-dagster-dagit:
     build:
       context: ./c3d3
       dockerfile: Dockerfile
@@ -13,7 +13,7 @@ services:
       - c3d3-postgres
     restart: always
 
-  c3d3-daemon:
+  c3d3-dagster-daemon:
     build:
       context: ./c3d3
       dockerfile: Dockerfile
@@ -24,15 +24,15 @@ services:
       - c3d3-postgres
     restart: always
 
-  c3d3-postgres:
+  c3d3-dagster-postgres:
     image: postgres:13
     environment:
-      POSTGRES_HOST: c3d3-postgres
-      POSTGRES_USER: c3d3-postgres
-      POSTGRES_PASSWORD: c3d3-postgres
-      POSTGRES_DB: c3d3-postgres
+      POSTGRES_HOST: c3d3-dagster-postgres
+      POSTGRES_USER: c3d3-dagster-postgres
+      POSTGRES_PASSWORD: c3d3-dagster-postgres
+      POSTGRES_DB: c3d3-dagster-postgres
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "c3d3-postgres" ]
+      test: [ "CMD", "pg_isready", "-U", "c3d3-dagster-postgres" ]
       interval: 5s
       retries: 5
     restart: always
