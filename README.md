@@ -7,8 +7,6 @@ Dagster is used for C3D3 ETL orchestration.
 
 # Configuration
 
-First of all to configure an Airflow Worker correctly need to do next steps:
-
 - Clone current repository:
 ```
 git clone https://github.com/e183b796621afbf902067460/c3d3-dagster.git
