@@ -27,7 +27,7 @@ services:
   c3d3-dagster-postgres:
     image: postgres:13
     environment:
-      POSTGRES_HOST: c3d3-dagster-postgres
+      POSTGRES_HOST: 0.0.0.0
       POSTGRES_USER: c3d3-dagster-postgres
       POSTGRES_PASSWORD: c3d3-dagster-postgres
       POSTGRES_DB: c3d3-dagster-postgres
