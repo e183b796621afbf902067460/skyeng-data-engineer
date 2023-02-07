@@ -39,6 +39,6 @@ services:
       retries: 5
     restart: always
     ports:
-      - '5432:5432'
+      - '5434:5432'
     volumes:
       - ./c3d3-dagster-postgres:/var/lib/postgres/c3d3-dagster-postgres

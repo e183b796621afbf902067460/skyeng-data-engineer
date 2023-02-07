@@ -1,33 +1,70 @@
 from typing import List
-from dagster import op
+from dagster import op, DynamicOut, DynamicOutput
 
 
 @op(
+    name='configs',
     required_resource_keys={
         'd3vault',
         'logger'
-    }
+    },
+    tags={
+        'fabric': 'wallet_balances_erc20'
+    },
+    out=DynamicOut(dict)
 )
-def get_cfgs(context) -> List[dict]:
-    data = [
-        {
-            'h_wallet_address': '0xe771d0daf2062aaaa09ddd93e0171d572fc09e66',
-            'h_label_name': 'MATIC_ROBOT',
-            'h_erc20_token_address': '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-            'h_network_name': 'polygon',
-            'h_network_rpc_node': 'https://rpc.ankr.com/polygon'
-        }
-    ]
-    context.resources.logger.info(f"Current data: {data}")
-    return data
+def extract_from_d3vault(context) -> List[dict]:
+    query = '''
+        SELECT
+            h_addresses0.h_address as wallet_address,
+            h_addresses1.h_address as token_address,
+            h_chains.h_network_name,
+            h_chains.h_network_rpc_node,
+            h_labels.h_label_name
+        FROM
+            l_tokens_on_wallets
+        LEFT JOIN
+            l_addresses_chains_labels USING(l_address_chain_label_id)
+        LEFT JOIN
+            h_labels USING(h_label_id)
+        LEFT JOIN
+            l_addresses_chains AS l_addresses_chains0 ON l_addresses_chains_labels.l_address_chain_id = l_addresses_chains0.l_address_chain_id
+        LEFT JOIN
+            h_addresses as h_addresses0 ON l_addresses_chains0.h_address_id = h_addresses0.h_address_id
+        LEFT JOIN
+            l_addresses_chains AS l_addresses_chains1 ON l_tokens_on_wallets.l_address_chain_id = l_addresses_chains1.l_address_chain_id
+        LEFT JOIN
+            h_addresses as h_addresses1 ON l_addresses_chains1.h_address_id = h_addresses1.h_address_id
+        LEFT JOIN
+            h_chains ON l_addresses_chains0.h_chain_id = h_chains.h_chain_id
+    '''
+    context.resources.logger.info(f"{query}")
+
+    samples = context.resources.d3vault.read(query=query)
+    for sample in samples:
+        wallet_address, token_address, label_name = sample[0], sample[1], sample[4]
+        network_name, network_rpc_node = sample[2], sample[3]
+        yield DynamicOutput(
+            {
+                'wallet_address': wallet_address,
+                'token_address': token_address,
+                'network_name': network_name,
+                'network_rpc_node': network_rpc_node,
+                'label_name': label_name
+            },
+            mapping_key=f'subtask_for_{wallet_address}_{token_address}_{network_name}'
+        )
 
 
 @op(
+    name='load_to_dwh',
     required_resource_keys={
         'dwh',
         'logger'
+    },
+    tags={
+        'fabric': 'wallet_balances_erc20'
     }
 )
-def load(context, get_overviews: List[List[dict]]) -> None:
-    for overview in get_overviews:
-        context.resources.logger.info(f"Current overview: {overview}")
+def load_to_dwh(context, df) -> None:
+    context.resources.logger.info(df)

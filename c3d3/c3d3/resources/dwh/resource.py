@@ -32,7 +32,7 @@ class DataWarehouse:
         return cls.DB_URL
 
     def read(self, query, *args, **kwargs):
-        return self.get_session().execute(query).fetchall()
+        return self.get_engine().execute(query).fetchall()
 
 
 @resource
