@@ -16,7 +16,7 @@ from trad3r.root.composite.trader import rootTrad3r
         'df_serializer',
         'w3sleep'
     },
-    description='get_overview() for account_limit_orders'
+    description='get_overview() for account_liquidations'
 )
 def get_overview(context, configs: dict) -> List[list]:
     def _formatting(samples: List[dict], cfg: dict) -> pd.DataFrame:
@@ -35,10 +35,13 @@ def get_overview(context, configs: dict) -> List[list]:
                 'label_name': 'h_label_name',
                 'exchange_name': 'h_exchange_name',
                 'ticker_name': 'h_ticker_name',
-                'limit_order_price': 'pit_limit_order_price',
+                'amt': 'pit_amt',
+                'entry_price': 'pit_entry_price',
+                'liquidation_price': 'pit_liquidation_price',
                 'current_price': 'pit_current_price',
-                'qty': 'pit_qty',
-                'side': 'pit_side'
+                'side': 'pit_side',
+                'leverage': 'pit_leverage',
+                'un_pnl': 'pit_un_pnl'
             },
             inplace=True
         )
@@ -47,7 +50,7 @@ def get_overview(context, configs: dict) -> List[list]:
         try:
             class_ = C3BridgeConfigurator(
                 abstract=c3Abstract,
-                fabric_name='account_limit_orders',
+                fabric_name='account_liquidations',
                 handler_name=configs['exchange_name']
             ).produce_handler()
             handler = class_(

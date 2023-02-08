@@ -1,4 +1,5 @@
 from typing import List
+import requests
 from dagster import asset
 import pandas as pd
 
@@ -40,18 +41,23 @@ def get_overview(context, configs: dict) -> List[list]:
             inplace=True
         )
         return df
-    class_ = C3BridgeConfigurator(
-        abstract=c3Abstract,
-        fabric_name='account_balances',
-        handler_name=configs['exchange_name']
-    ).produce_handler()
-    handler = class_(
-        api=context.resources.fernet.decrypt(configs['label_api_key'].encode()).decode(),
-        secret=context.resources.fernet.decrypt(configs['label_secret_key'].encode()).decode(),
-        trader=rootTrad3r
-    )
-    overview: List[dict] = handler.get_overview(ticker=configs['symbol_name'])
-
+    while True:
+        try:
+            class_ = C3BridgeConfigurator(
+                abstract=c3Abstract,
+                fabric_name='account_balances',
+                handler_name=configs['exchange_name']
+            ).produce_handler()
+            handler = class_(
+                api=context.resources.fernet.decrypt(configs['label_api_key'].encode()).decode(),
+                secret=context.resources.fernet.decrypt(configs['label_secret_key'].encode()).decode(),
+                trader=rootTrad3r
+            )
+            overview: List[dict] = handler.get_overview(ticker=configs['symbol_name'])
+        except requests.exceptions.ConnectionError:
+            context.resources.w3sleep.sleep()
+        else:
+            break
     df = _formatting(samples=overview, cfg=configs)
     return context.resources.df_serializer.df_to_list(df)
 
