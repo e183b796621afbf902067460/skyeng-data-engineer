@@ -11,3 +11,6 @@ load_from:
   - python_file:
       relative_path: c3d3/definitions/hedge_to_borrows/definitions.py
       attribute: hedge_to_borrows
+  - python_file:
+      relative_path: c3d3/definitions/hedge_to_supplies/definitions.py
+      attribute: hedge_to_supplies

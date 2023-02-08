@@ -3,6 +3,9 @@ import random
 from dagster import resource
 
 
+MAX_BACKOFF = 64
+
+
 class W3Sleep:
     instance, n = None, 0
 
@@ -13,7 +16,7 @@ class W3Sleep:
 
     @classmethod
     def sleep(cls):
-        time.sleep(min(2 ** cls.n + random.uniform(0, .1), 64))
+        time.sleep(min(2 ** cls.n + random.uniform(0, .1), MAX_BACKOFF))
         cls.n += 1
 
 
