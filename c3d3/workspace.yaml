@@ -17,3 +17,6 @@ load_from:
   - python_file:
       relative_path: c3d3/definitions/account_balances/definitions.py
       attribute: account_balances
+  - python_file:
+      relative_path: c3d3/definitions/account_limit_orders/definitions.py
+      attribute: account_limit_orders
