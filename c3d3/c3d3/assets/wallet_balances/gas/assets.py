@@ -15,7 +15,7 @@ from trad3r.root.composite.trader import rootTrad3r
         'fernet',
         'df_serializer'
     },
-    description='get_overview() for wallet_balances_erc20'
+    description='get_overview() for wallet_balances_gas'
 )
 def get_overview(context, configs: dict) -> List[list]:
     def _formatting(samples: List[dict], cfg: dict) -> pd.DataFrame:
@@ -23,7 +23,7 @@ def get_overview(context, configs: dict) -> List[list]:
             {
                 'wallet_address': cfg['wallet_address'],
                 'label_name': cfg['label_name'],
-                'token_address': cfg['token_address'],
+                'native_chain_token': cfg['native_chain_token'],
                 'network_name': cfg['network_name']
             }
         )
@@ -33,7 +33,7 @@ def get_overview(context, configs: dict) -> List[list]:
             columns={
                 'wallet_address': 'h_wallet_address',
                 'label_name': 'h_label_name',
-                'token_address': 'h_token_address',
+                'native_chain_token': 'h_native_chain_token',
                 'network_name': 'h_network_name',
                 'symbol': 'pit_symbol',
                 'qty': 'pit_qty',
@@ -47,10 +47,10 @@ def get_overview(context, configs: dict) -> List[list]:
     class_ = D3BridgeConfigurator(
         abstract=d3Abstract,
         fabric_name='wallet_balances',
-        handler_name='erc20'
+        handler_name='gas'
     ).produce_handler()
     handler = class_(
-        address=configs['token_address'],
+        gas_symbol=configs['native_chain_token'],
         provider=provider,
         trader=rootTrad3r
     )

@@ -2,3 +2,6 @@ load_from:
   - python_file:
       relative_path: c3d3/definitions/wallet_balances/erc20/definitions.py
       attribute: wallet_balances_erc20
+  - python_file:
+      relative_path: c3d3/definitions/wallet_balances/gas/definitions.py
+      attribute: wallet_balances_gas
