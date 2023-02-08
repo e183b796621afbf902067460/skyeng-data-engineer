@@ -35,7 +35,7 @@ run_coordinator:
   module: dagster.core.run_coordinator
   class: QueuedRunCoordinator
   config:
-    max_concurrent_runs: 4
+    dequeue_use_threads: true
 
 telemetry:
   enabled: false
@@ -45,5 +45,4 @@ nux:
 
 schedules:
   use_threads: true
-  num_workers: 4
 
