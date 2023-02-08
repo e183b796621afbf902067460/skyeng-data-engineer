@@ -14,3 +14,6 @@ load_from:
   - python_file:
       relative_path: c3d3/definitions/hedge_to_supplies/definitions.py
       attribute: hedge_to_supplies
+  - python_file:
+      relative_path: c3d3/definitions/account_balances/definitions.py
+      attribute: account_balances
