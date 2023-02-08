@@ -13,7 +13,8 @@ from trad3r.root.composite.trader import rootTrad3r
     required_resource_keys={
         'logger',
         'fernet',
-        'df_serializer'
+        'df_serializer',
+        'w3sleep'
     },
     description='get_overview() for wallet_balances_erc20'
 )
@@ -42,19 +43,24 @@ def get_overview(context, configs: dict) -> List[list]:
             inplace=True
         )
         return df
-
-    provider = HTTPProvider(uri=context.resources.fernet.decrypt(configs['network_rpc_node'].encode()).decode())
-    class_ = D3BridgeConfigurator(
-        abstract=d3Abstract,
-        fabric_name='wallet_balances',
-        handler_name='erc20'
-    ).produce_handler()
-    handler = class_(
-        address=configs['token_address'],
-        provider=provider,
-        trader=rootTrad3r
-    )
-    overview: List[dict] = handler.get_overview(address=configs['wallet_address'])
+    while True:
+        try:
+            provider = HTTPProvider(uri=context.resources.fernet.decrypt(configs['network_rpc_node'].encode()).decode())
+            class_ = D3BridgeConfigurator(
+                abstract=d3Abstract,
+                fabric_name='wallet_balances',
+                handler_name='erc20'
+            ).produce_handler()
+            handler = class_(
+                address=configs['token_address'],
+                provider=provider,
+                trader=rootTrad3r
+            )
+            overview: List[dict] = handler.get_overview(address=configs['wallet_address'])
+        except ValueError:
+            context.resources.w3sleep.sleep()
+        else:
+            break
     df = _formatting(samples=overview, cfg=configs)
     return context.resources.df_serializer.df_to_list(df)
 

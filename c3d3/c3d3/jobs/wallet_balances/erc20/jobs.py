@@ -7,6 +7,7 @@ from c3d3.resources.logger.resource import logger
 from c3d3.resources.dwh.resource import dwh
 from c3d3.resources.fernet.resource import fernet
 from c3d3.resources.serializers.resource import df_serializer
+from c3d3.resources.w3sleep.resource import w3sleep
 
 
 @job(
@@ -16,7 +17,8 @@ from c3d3.resources.serializers.resource import df_serializer
         'dwh': dwh,
         'logger': logger,
         'fernet': fernet,
-        'df_serializer': df_serializer
+        'df_serializer': df_serializer,
+        'w3sleep': w3sleep
     }
 )
 def dag():
