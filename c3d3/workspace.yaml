@@ -23,3 +23,6 @@ load_from:
   - python_file:
       relative_path: c3d3/definitions/account_liquidations/definitions.py
       attribute: account_liquidations
+  - python_file:
+      relative_path: c3d3/definitions/whole_market_trades_history/definitions.py
+      attribute: whole_market_trades_history
