@@ -25,3 +25,9 @@ def dag():
     configs = extract_from_d3vault()
     overviews = configs.map(get_overview)
     load_to_dwh(overviews.collect())
+
+
+if __name__ == "__main__":
+    result = dag.execute_in_process()
+    print(result)
+

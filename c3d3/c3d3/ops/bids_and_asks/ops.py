@@ -1,6 +1,8 @@
 from typing import List
 from datetime import datetime
+
 from dagster import op, DynamicOut, DynamicOutput
+import pandas as pd
 
 
 @op(
@@ -83,8 +85,12 @@ def extract_from_d3vault(context) -> List[dict]:
     }
 )
 def load_to_dwh(context, df: List[list]) -> None:
-    now = datetime.utcnow()
+    concat_df = pd.DataFrame()
     for mini_df in df:
         mini_df = context.resources.df_serializer.df_from_list(mini_df)
-        mini_df['pit_ts'] = now
+        concat_df = concat_df.append(mini_df, ignore_index=True)
         context.resources.logger.info(mini_df.head())
+    context.resources.dwh.get_client().insert_df(
+        table='pit_big_table_bids_and_asks',
+        df=concat_df
+    )

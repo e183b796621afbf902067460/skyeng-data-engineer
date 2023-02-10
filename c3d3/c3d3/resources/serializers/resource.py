@@ -11,7 +11,7 @@ class DataFrameToDagsterMapReduceSerializer:
 
     @staticmethod
     def df_from_list(lst: List[list]) -> pd.DataFrame:
-        return pd.DataFrame(lst[1:], columns=lst[1:])
+        return pd.DataFrame(lst[1:], columns=lst[0])
 
 
 @resource

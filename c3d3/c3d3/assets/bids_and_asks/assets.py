@@ -12,6 +12,7 @@ from trad3r.root.composite.trader import rootTrad3r
 @asset(
     name='df',
     required_resource_keys={
+        'dwh',
         'logger',
         'fernet',
         'df_serializer',
@@ -55,6 +56,19 @@ def get_overview(context, configs: dict) -> List[list]:
         )
         return df
     now = datetime.datetime.utcnow()
+    previous = context.resources.dwh.get_client().query(
+        f'''
+        SELECT 
+            MAX(pit_ts) 
+        FROM 
+            pit_big_table_bids_and_asks 
+        WHERE 
+            h_pool_address = '{configs['pool_address']}' AND
+            h_protocol_name = '{configs['protocol_name']}' AND
+            h_network_name = '{configs['network_name']}'
+    ''').result_rows[0][0]
+    previous = previous if previous.strftime('%Y') != '1970' or not previous else now - datetime.timedelta(minutes=5)
+    context.resources.logger.info(f"Current previous timestamp: {previous}")
     while True:
         try:
             provider = HTTPProvider(uri=context.resources.fernet.decrypt(configs['network_rpc_node'].encode()).decode())
@@ -73,7 +87,7 @@ def get_overview(context, configs: dict) -> List[list]:
                 trader=rootTrad3r
             )
             overview: List[dict] = handler.get_overview(
-                start=now - datetime.timedelta(minutes=5),
+                start=previous,
                 end=now,
                 is_reverse=False
             )

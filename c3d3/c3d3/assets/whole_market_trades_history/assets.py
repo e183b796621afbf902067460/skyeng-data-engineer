@@ -41,7 +41,20 @@ def get_overview(context, configs: dict) -> List[list]:
             inplace=True
         )
         return df
+
     now = datetime.datetime.utcnow()
+    previous = context.resources.dwh.get_client().query(
+        f'''
+            SELECT 
+                MAX(pit_ts) 
+            FROM 
+                pit_big_table_whole_market_trades_history
+            WHERE 
+                h_exchange_name = '{configs['exchange_name']}' AND
+                h_ticker_name = '{configs['ticker_name']}'
+        ''').result_rows[0][0]
+    previous = previous if previous.strftime('%Y') != '1970' or not previous else now - datetime.timedelta(minutes=5)
+    context.resources.logger.info(f"Current previous timestamp: {previous}")
     while True:
         try:
             class_ = C3BridgeConfigurator(
@@ -51,7 +64,7 @@ def get_overview(context, configs: dict) -> List[list]:
             ).produce_handler()
             handler = class_()
             overview: List[dict] = handler.get_overview(
-                start=now - datetime.timedelta(minutes=5),
+                start=previous,
                 end=now,
                 ticker=configs['ticker_name']
             )

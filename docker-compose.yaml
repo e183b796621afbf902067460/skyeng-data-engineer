@@ -14,6 +14,8 @@ services:
     depends_on:
       - c3d3-dagster-postgres
     restart: always
+    networks:
+      - c3d3_network
 
   c3d3-dagster-daemon:
     build:
@@ -25,6 +27,8 @@ services:
     depends_on:
       - c3d3-dagster-postgres
     restart: always
+    networks:
+      - c3d3_network
 
   c3d3-dagster-postgres:
     image: postgres:13
@@ -39,6 +43,11 @@ services:
       retries: 5
     restart: always
     ports:
-      - '5434:5432'
+      - '5435:5432'
     volumes:
       - ./c3d3-dagster-postgres:/var/lib/postgres/c3d3-dagster-postgres
+    networks:
+      - c3d3_network
+
+networks:
+  c3d3_network:
