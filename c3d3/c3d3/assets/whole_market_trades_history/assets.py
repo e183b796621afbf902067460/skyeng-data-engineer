@@ -12,6 +12,7 @@ from trad3r.root.composite.trader import rootTrad3r
 @asset(
     name='df',
     required_resource_keys={
+        'dwh',
         'logger',
         'fernet',
         'df_serializer',
