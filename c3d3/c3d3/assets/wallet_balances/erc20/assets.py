@@ -34,7 +34,7 @@ def get_overview(context, configs: dict) -> List[list]:
             columns={
                 'wallet_address': 'h_wallet_address',
                 'label_name': 'h_label_name',
-                'token_address': 'h_token_address',
+                'token_address': 'h_erc20_token_address',
                 'network_name': 'h_network_name',
                 'symbol': 'pit_symbol',
                 'qty': 'pit_qty',
