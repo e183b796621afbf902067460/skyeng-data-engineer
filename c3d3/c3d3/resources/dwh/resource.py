@@ -24,7 +24,8 @@ class DataWarehouse:
             port=cls.DB_PORT,
             username=cls.DB_USER,
             password=cls.DB_PASSWORD,
-            database=cls.DB_NAME
+            database=cls.DB_NAME,
+            secure=True
         )
 
     @classmethod
