@@ -59,9 +59,7 @@ def get_overview(context, configs: dict) -> List[list]:
                 trader=rootTrad3r
             )
             overview: List[dict] = handler.get_overview(ticker=configs['ticker_name'])
-        except requests.exceptions.ConnectionError:
-            context.resources.w3sleep.sleep()
-        except requests.exceptions.HTTPError:
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             context.resources.w3sleep.sleep()
         else:
             break
