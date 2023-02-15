@@ -56,6 +56,8 @@ def get_overview(context, configs: dict) -> List[list]:
             overview: List[dict] = handler.get_overview(ticker=configs['symbol_name'])
         except requests.exceptions.ConnectionError:
             context.resources.w3sleep.sleep()
+        except requests.exceptions.HTTPError:
+            context.resources.w3sleep.sleep()
         else:
             break
     df = _formatting(samples=overview, cfg=configs)
