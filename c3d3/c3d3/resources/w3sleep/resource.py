@@ -4,6 +4,7 @@ from dagster import resource
 
 
 MAX_BACKOFF = 64
+MAX_RETRIES = 8
 
 
 class W3Sleep:
@@ -16,7 +17,10 @@ class W3Sleep:
 
     @classmethod
     def sleep(cls):
-        time.sleep(min(2 ** cls.n + random.uniform(0, .1), MAX_BACKOFF))
+        if cls.n < MAX_RETRIES:
+            time.sleep(min(2 ** cls.n + random.uniform(0, .1), MAX_BACKOFF))
+        else:
+            raise TimeoutError(f'W3Sleep too much retries: {cls.n}')
         cls.n += 1
 
 
