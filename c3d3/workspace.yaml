@@ -6,9 +6,6 @@ load_from:
       relative_path: c3d3/definitions/wallet_balances/gas/definitions.py
       attribute: wallet_balances_gas
   - python_file:
-      relative_path: c3d3/definitions/bids_and_asks/definitions.py
-      attribute: bids_and_asks
-  - python_file:
       relative_path: c3d3/definitions/hedge_to_borrows/definitions.py
       attribute: hedge_to_borrows
   - python_file:
@@ -23,6 +20,3 @@ load_from:
   - python_file:
       relative_path: c3d3/definitions/account_liquidations/definitions.py
       attribute: account_liquidations
-  - python_file:
-      relative_path: c3d3/definitions/whole_market_trades_history/definitions.py
-      attribute: whole_market_trades_history
