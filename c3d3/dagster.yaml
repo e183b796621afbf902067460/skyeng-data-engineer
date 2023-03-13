@@ -37,7 +37,7 @@ run_coordinator:
   config:
     max_concurrent_runs: 2
     dequeue_use_threads: true
-    dequeue_num_workers: 2
+    dequeue_num_workers: 4
 
 telemetry:
   enabled: false
