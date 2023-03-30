@@ -15,8 +15,7 @@ from trad3r.root.composite.trader import rootTrad3r
         'fernet',
         'df_serializer',
         'w3sleep'
-    },
-    description='get_overview() for account_balances'
+    }
 )
 def get_overview(context, configs: dict) -> List[list]:
     def _formatting(samples: List[dict], cfg: dict) -> pd.DataFrame:
