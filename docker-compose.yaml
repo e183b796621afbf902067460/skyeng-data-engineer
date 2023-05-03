@@ -2,52 +2,52 @@ version: "3"
 
 services:
 
-  c3d3-dagster-dagit:
+  dagit:
     build:
-      context: ./c3d3
+      context: ./skyeng
       dockerfile: Dockerfile
     ports:
       - '3000:3000'
     env_file:
-      - c3d3/.env
+      - skyeng/.env
     command: "dagit -w workspace.yaml -h 0.0.0.0 -p 3000"
     depends_on:
-      - c3d3-dagster-postgres
+      - postgres-metadata
     restart: always
     networks:
-      - c3d3_network
+      - sky_network
 
-  c3d3-dagster-daemon:
+  daemon:
     build:
-      context: ./c3d3
+      context: ./skyeng
       dockerfile: Dockerfile
     env_file:
-      - c3d3/.env
+      - skyeng/.env
     command: "dagster-daemon run -w workspace.yaml"
     depends_on:
-      - c3d3-dagster-postgres
+      - postgres-metadata
     restart: always
     networks:
-      - c3d3_network
+      - sky_network
 
-  c3d3-dagster-postgres:
+  postgres-metadata:
     image: postgres:13
     environment:
       POSTGRES_HOST: 0.0.0.0
-      POSTGRES_USER: c3d3-dagster-postgres
-      POSTGRES_PASSWORD: c3d3-dagster-postgres
-      POSTGRES_DB: c3d3-dagster-postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "c3d3-dagster-postgres" ]
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
       interval: 5s
       retries: 5
     restart: always
     ports:
-      - '5435:5432'
+      - '5432:5432'
     volumes:
-      - ./c3d3-dagster-postgres:/var/lib/postgresql/data
+      - ./postgres-metadata:/var/lib/postgresql/data
     networks:
-      - c3d3_network
+      - sky_network
 
 networks:
-  c3d3_network:
+  sky_network:
