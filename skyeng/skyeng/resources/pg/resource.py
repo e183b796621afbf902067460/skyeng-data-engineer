@@ -9,11 +9,12 @@ from urllib.parse import quote_plus
 
 class PgResource:
     DB_ADDRESS = os.getenv('PG_HOST', '')
+    DB_PORT = os.getenv('PG_PORT', '')
     DB_USER = os.getenv('PG_USER', '')
     DB_PASSWORD = quote_plus(os.getenv('PG_PASSWORD', ''))
     DB_NAME = os.getenv('PG_DB', '')
 
-    DB_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}/{DB_NAME}'
+    DB_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}'
 
     @classmethod
     def get_session(cls) -> Session:
