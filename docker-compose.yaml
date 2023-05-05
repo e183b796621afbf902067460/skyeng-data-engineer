@@ -11,6 +11,8 @@ x-common:
     - ./skyeng/dags:/opt/airflow/dags
     - ./skyeng/logs:/opt/airflow/logs
     - ./skyeng/plugins:/opt/airflow/plugins
+  environment:
+    PYTHONPATH: "resources:${PYTHONPATH}"
 
 x-depends-on:
   &depends-on
