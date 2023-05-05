@@ -6,7 +6,7 @@ x-common:
   image: apache/airflow:2.3.0
   user: "${AIRFLOW_UID}:0"
   env_file:
-    - .env
+    - ./skyeng/.env
   volumes:
     - ./skyeng/dags:/opt/airflow/dags
     - ./skyeng/logs:/opt/airflow/logs
