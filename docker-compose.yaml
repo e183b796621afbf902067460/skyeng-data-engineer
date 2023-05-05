@@ -1,36 +1,81 @@
-version: "3"
+---
+version: '3.4'
+
+x-common:
+  &common
+  image: apache/airflow:2.3.0
+  user: "${AIRFLOW_UID}:0"
+  env_file:
+    - .env
+  volumes:
+    - ./skyeng/dags:/opt/airflow/dags
+    - ./skyeng/logs:/opt/airflow/logs
+    - ./skyeng/plugins:/opt/airflow/plugins
+
+x-depends-on:
+  &depends-on
+  depends_on:
+    postgres:
+      condition: service_healthy
+    airflow-init:
+      condition: service_completed_successfully
 
 services:
 
-  dagit:
-    build:
-      context: ./skyeng
-      dockerfile: Dockerfile
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_HOST: 0.0.0.0
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
     ports:
-      - '3000:3000'
-    env_file:
-      - skyeng/.env
-    command: "dagit -w workspace.yaml -h 0.0.0.0 -p 3000"
-    depends_on:
-      - postgres-metadata
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
     restart: always
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
     networks:
       - sky_network
 
-  daemon:
-    build:
-      context: ./skyeng
-      dockerfile: Dockerfile
-    env_file:
-      - skyeng/.env
-    command: "dagster-daemon run -w workspace.yaml"
-    depends_on:
-      - postgres-metadata
-    restart: always
-    networks:
-      - sky_network
+  scheduler:
+    <<: *common
+    <<: *depends-on
+    container_name: airflow-scheduler
+    command: scheduler
+    restart: on-failure
+    ports:
+      - "8793:8793"
 
-  postgres-metadata:
+  webserver:
+    <<: *common
+    <<: *depends-on
+    container_name: airflow-webserver
+    restart: always
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+
+  airflow-init:
+    <<: *common
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        mkdir -p /sources/logs /sources/dags /sources/plugins
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        exec /entrypoint airflow version
+
+  postgres-datasource:
     image: postgres:13
     environment:
       POSTGRES_HOST: 0.0.0.0
@@ -43,9 +88,48 @@ services:
       retries: 5
     restart: always
     ports:
-      - '5432:5432'
+      - '5434:5432'
     volumes:
-      - ./postgres-metadata:/var/lib/postgresql/data
+      - ./postgres-datasource:/var/lib/postgresql/data
+      - ./skyeng/dumps/datasource_dump.sql:/docker-entrypoint-initdb.d/datasource_dump.sql
+    networks:
+      - sky_network
+
+  postgres-datawarehouse:
+    image: postgres:13
+    environment:
+      POSTGRES_HOST: 0.0.0.0
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      retries: 5
+    restart: always
+    ports:
+      - '5435:5432'
+    volumes:
+      - ./postgres-datawarehouse:/var/lib/postgresql/data
+      - ./skyeng/dumps/datawarehouse_dump.sql:/docker-entrypoint-initdb.d/datawarehouse_dump.sql
+    networks:
+      - sky_network
+
+  clickhouse-datamart:
+    image: clickhouse/clickhouse-server
+    environment:
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+      CLICKHOUSE_HOST: 0.0.0.0
+      CLICKHOUSE_DB: clickhouse
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+    volumes:
+      - ./clickhouse-datamart:/var/lib/clickhouse/
+    ports:
+      - '8123:8123'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://0.0.0.0:8123/ping || exit 1
+    restart: always
     networks:
       - sky_network
 
