@@ -14,7 +14,6 @@ x-common:
     - ./skyeng/logs:/opt/airflow/logs
     - ./skyeng/plugins:/opt/airflow/plugins
     - ./skyeng/resources:/opt/airflow/resources
-    - ./skyeng/requirements.txt:/opt/airflow/requirements.txt
   environment:
     PYTHONPATH: "resources:${PYTHONPATH}"
 
