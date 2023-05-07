@@ -78,7 +78,7 @@ VALUES
     (2, '2022-03-14', '2022-05-15', FALSE, 'DE_Stream_1'),
     (3, '2023-02-07', '2023-03-27', TRUE, 'DA_Stream_3'),
     (3, '2023-01-22', '2023-03-24', TRUE, 'DA_Stream_2'),
-    (3, '2022-10-25', '2022-12-19', FALSE, 'DS_Stream_1');
+    (3, '2022-10-25', '2022-12-19', FALSE, 'DA_Stream_1');
 
 INSERT INTO
     stream_module (stream_id, title, order_in_stream)

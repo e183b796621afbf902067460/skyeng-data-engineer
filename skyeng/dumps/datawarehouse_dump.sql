@@ -106,55 +106,26 @@ create TABLE IF NOT EXISTS s_lessons
            REFERENCES h_lessons(h_lesson_id)
 );
 
-create TABLE IF NOT EXISTS l_courses_modules
+create TABLE IF NOT EXISTS l_courses_modules_lessons_streams
 (
-    l_course_module_id                  SERIAL4 NOT NULL,
-    h_course_id                         INTEGER,
-    h_module_id                         INTEGER,
-    CONSTRAINT l_course_module_pkey     PRIMARY KEY (l_course_module_id),
+    l_course_module_lesson_stream_id                SERIAL4 NOT NULL,
+    h_course_id                                     INTEGER,
+    h_module_id                                     INTEGER,
+    h_lesson_id                                     INTEGER,
+    h_stream_id                                     INTEGER,
+    l_module_order_in_stream                        INTEGER,
+    l_course_module_lesson_stream_load_ts           TIMESTAMP DEFAULT now(),
+    CONSTRAINT l_course_module_lesson_stream_pkey   PRIMARY KEY (l_course_module_lesson_stream_id),
     CONSTRAINT fk_h_course
         FOREIGN KEY(h_course_id)
             REFERENCES h_courses(h_course_id),
     CONSTRAINT fk_h_module
         FOREIGN KEY(h_module_id)
-            REFERENCES h_modules(h_module_id)
-);
-
-create TABLE IF NOT EXISTS l_courses_modules_lessons
-(
-    l_course_module_lesson_id                   SERIAL4 NOT NULL,
-    l_course_module_id                          INTEGER,
-    h_lesson_id                                 INTEGER,
-    CONSTRAINT l_course_module_lesson_pkey      PRIMARY KEY (l_course_module_lesson_id),
-    CONSTRAINT fk_l_course_module
-        FOREIGN KEY(l_course_module_id)
-            REFERENCES l_courses_modules(l_course_module_id),
+            REFERENCES h_modules(h_module_id),
     CONSTRAINT fk_h_lesson
         FOREIGN KEY(h_lesson_id)
-            REFERENCES h_lessons(h_lesson_id)
-);
-
-create TABLE IF NOT EXISTS l_courses_modules_lessons_streams
-(
-    l_course_module_lesson_stream_id                   SERIAL4 NOT NULL,
-    l_course_module_lesson_id                          INTEGER,
-    h_stream_id                                        INTEGER,
-    CONSTRAINT l_course_module_lesson_stream_pkey      PRIMARY KEY (l_course_module_lesson_stream_id),
-    CONSTRAINT fk_l_course_module_lesson
-        FOREIGN KEY(l_course_module_lesson_id)
-            REFERENCES l_courses_modules_lessons(l_course_module_lesson_id),
+            REFERENCES h_lessons(h_lesson_id),
     CONSTRAINT fk_h_stream
         FOREIGN KEY(h_stream_id)
             REFERENCES h_streams(h_stream_id)
-);
-
-create TABLE IF NOT EXISTS s_courses_modules_lessons_streams
-(
-    s_course_module_lesson_stream_id                   SERIAL4 NOT NULL,
-    l_course_module_lesson_stream_id                   INTEGER,
-    s_course_module_lesson_stream_order_in_stream      INTEGER,
-    CONSTRAINT s_course_module_lesson_stream_pkey      PRIMARY KEY (s_course_module_lesson_stream_id),
-    CONSTRAINT fk_l_course_module_lesson_stream
-        FOREIGN KEY(l_course_module_lesson_stream_id)
-            REFERENCES l_courses_modules_lessons_streams(l_course_module_lesson_stream_id)
 );
