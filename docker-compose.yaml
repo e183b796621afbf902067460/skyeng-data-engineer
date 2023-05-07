@@ -1,5 +1,5 @@
 ---
-version: '3.4'
+version: '3'
 
 x-common:
   &common
@@ -11,6 +11,7 @@ x-common:
     - ./skyeng/dags:/opt/airflow/dags
     - ./skyeng/logs:/opt/airflow/logs
     - ./skyeng/plugins:/opt/airflow/plugins
+    - ./skyeng/resources:/opt/airflow/resources
   environment:
     PYTHONPATH: "resources:${PYTHONPATH}"
 
@@ -51,6 +52,8 @@ services:
     restart: on-failure
     ports:
       - "8793:8793"
+    networks:
+      - sky_network
 
   webserver:
     <<: *common
@@ -65,6 +68,8 @@ services:
       interval: 30s
       timeout: 30s
       retries: 5
+    networks:
+      - sky_network
 
   airflow-init:
     <<: *common
@@ -76,6 +81,8 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         exec /entrypoint airflow version
+    networks:
+      - sky_network
 
   postgres-datasource:
     image: postgres:13
@@ -127,6 +134,7 @@ services:
       CLICKHOUSE_PASSWORD: clickhouse
     volumes:
       - ./clickhouse-datamart:/var/lib/clickhouse/
+      - ./skyeng/dumps/datamart_dump.sql:/docker-entrypoint-initdb.d/datamart_dump.sql
     ports:
       - '8123:8123'
     healthcheck:
