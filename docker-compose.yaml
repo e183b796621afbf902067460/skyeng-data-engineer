@@ -3,7 +3,9 @@ version: '3'
 
 x-common:
   &common
-  image: apache/airflow:2.3.0
+  build:
+    context: ./skyeng
+    dockerfile: Dockerfile
   user: "${AIRFLOW_UID}:0"
   env_file:
     - ./skyeng/.env
@@ -12,6 +14,7 @@ x-common:
     - ./skyeng/logs:/opt/airflow/logs
     - ./skyeng/plugins:/opt/airflow/plugins
     - ./skyeng/resources:/opt/airflow/resources
+    - ./skyeng/requirements.txt:/opt/airflow/requirements.txt
   environment:
     PYTHONPATH: "resources:${PYTHONPATH}"
 
@@ -125,7 +128,7 @@ services:
       - sky_network
 
   clickhouse-datamart:
-    image: clickhouse/clickhouse-server
+    image: clickhouse/clickhouse-server:head-alpine
     environment:
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
       CLICKHOUSE_HOST: 0.0.0.0
