@@ -15,34 +15,34 @@ def e_from_pg_datasource() -> dict:
     Q = '''
         SELECT
             course.title AS h_course_title,
-            TO_CHAR(course.created_at, 'MM-DD-YYYY HH24:MI:SS') AS s_course_created_at,
-            TO_CHAR(course.updated_at, 'MM-DD-YYYY HH24:MI:SS') AS s_course_updated_at,
-            TO_CHAR(course.deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_course_deleted_at,
+            TO_CHAR(course.created_at, 'YYYY-MM-DD HH24:MI:SS') AS s_course_created_at,
+            TO_CHAR(course.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS s_course_updated_at,
+            TO_CHAR(course.deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_course_deleted_at,
             course.icon_url AS s_course_icon_url,
             course.is_auto_course_enroll AS s_course_is_auto_course_enroll,
             course.is_demo_enroll AS s_course_is_demo_enroll,
             stream.name AS h_stream_name,
             stream.is_open AS s_stream_is_open,
             stream.homework_deadline_days AS s_stream_homework_deadline_days,
-            TO_CHAR(stream.start_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_start_at,
-            TO_CHAR(stream.end_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_end_at,
-            TO_CHAR(stream.created_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_created_at,
-            TO_CHAR(stream.updated_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_updated_at,
-            TO_CHAR(stream.deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_deleted_at,
+            TO_CHAR(stream.start_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_start_at,
+            TO_CHAR(stream.end_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_end_at,
+            TO_CHAR(stream.created_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_created_at,
+            TO_CHAR(stream.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_updated_at,
+            TO_CHAR(stream.deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_deleted_at,
             stream_module.title AS h_module_title,
             stream_module.order_in_stream AS l_module_order_in_stream,
-            TO_CHAR(stream_module.created_at, 'MM-DD-YYYY HH24:MI:SS') AS s_module_created_at,
-            TO_CHAR(stream_module.updated_at, 'MM-DD-YYYY HH24:MI:SS') AS s_module_updated_at,
-            TO_CHAR(stream_module.deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_module_deleted_at,
+            TO_CHAR(stream_module.created_at, 'YYYY-MM-DD HH24:MI:SS') AS s_module_created_at,
+            TO_CHAR(stream_module.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS s_module_updated_at,
+            TO_CHAR(stream_module.deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_module_deleted_at,
             stream_module_lesson.title AS h_lesson_title,
             stream_module_lesson.description AS s_lesson_description,
-            TO_CHAR(stream_module_lesson.start_at, 'MM-DD-YYYY HH24:MI:SS') AS s_lesson_start_at,
-            TO_CHAR(stream_module_lesson.end_at, 'MM-DD-YYYY HH24:MI:SS') AS s_lesson_end_at,
+            TO_CHAR(stream_module_lesson.start_at, 'YYYY-MM-DD HH24:MI:SS') AS s_lesson_start_at,
+            TO_CHAR(stream_module_lesson.end_at, 'YYYY-MM-DD HH24:MI:SS') AS s_lesson_end_at,
             stream_module_lesson.homework_url AS s_lesson_homework_url,
             stream_module_lesson.teacher_id AS s_lesson_teacher_id,
             stream_module_lesson.online_lesson_join_url AS s_lesson_online_lesson_join_url,
             stream_module_lesson.online_lesson_recording_url AS s_lesson_online_lesson_recording_url,
-            TO_CHAR(stream_module_lesson.deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_lesson_deleted_at
+            TO_CHAR(stream_module_lesson.deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_lesson_deleted_at
         FROM
             course
         LEFT JOIN
@@ -52,7 +52,7 @@ def e_from_pg_datasource() -> dict:
         LEFT JOIN
             stream_module_lesson ON stream_module.id = stream_module_lesson.stream_module_id
     '''
-    df = pd.read_sql(sql=Q, con=pg_datasource().get_engine())
+    df = pd.read_sql(sql=Q, con=pg_datasource().get_engine()).drop_duplicates()
     logging.info(f'Current shape of dataframe is {df.shape}')
     return df.to_dict(orient='list')
 
@@ -66,34 +66,34 @@ def e_from_pg_datawarehouse() -> dict:
     Q = '''
         SELECT
             h_course_title,
-            TO_CHAR(s_course_created_at, 'MM-DD-YYYY HH24:MI:SS') AS s_course_created_at,
-            TO_CHAR(s_course_updated_at, 'MM-DD-YYYY HH24:MI:SS') AS s_course_updated_at,
-            TO_CHAR(s_course_deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_course_deleted_at,
+            TO_CHAR(s_course_created_at, 'YYYY-MM-DD HH24:MI:SS') AS s_course_created_at,
+            TO_CHAR(s_course_updated_at, 'YYYY-MM-DD HH24:MI:SS') AS s_course_updated_at,
+            TO_CHAR(s_course_deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_course_deleted_at,
             s_course_icon_url,
             s_course_is_auto_course_enroll,
             s_course_is_demo_enroll,
             h_stream_name,
             s_stream_is_open,
             s_stream_homework_deadline_days,
-            TO_CHAR(s_stream_start_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_start_at,
-            TO_CHAR(s_stream_end_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_end_at,
-            TO_CHAR(s_stream_created_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_created_at,
-            TO_CHAR(s_stream_updated_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_updated_at,
-            TO_CHAR(s_stream_deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_stream_deleted_at,
+            TO_CHAR(s_stream_start_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_start_at,
+            TO_CHAR(s_stream_end_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_end_at,
+            TO_CHAR(s_stream_created_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_created_at,
+            TO_CHAR(s_stream_updated_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_updated_at,
+            TO_CHAR(s_stream_deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_stream_deleted_at,
             h_module_title,
             l_module_order_in_stream,
-            TO_CHAR(s_module_created_at, 'MM-DD-YYYY HH24:MI:SS') AS s_module_created_at,
-            TO_CHAR(s_module_updated_at, 'MM-DD-YYYY HH24:MI:SS') AS s_module_updated_at,
-            TO_CHAR(s_module_deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_module_deleted_at,
+            TO_CHAR(s_module_created_at, 'YYYY-MM-DD HH24:MI:SS') AS s_module_created_at,
+            TO_CHAR(s_module_updated_at, 'YYYY-MM-DD HH24:MI:SS') AS s_module_updated_at,
+            TO_CHAR(s_module_deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_module_deleted_at,
             h_lesson_title,
             s_lesson_description,
-            TO_CHAR(s_lesson_start_at, 'MM-DD-YYYY HH24:MI:SS') AS s_lesson_start_at,
-            TO_CHAR(s_lesson_end_at, 'MM-DD-YYYY HH24:MI:SS') AS s_lesson_end_at,
+            TO_CHAR(s_lesson_start_at, 'YYYY-MM-DD HH24:MI:SS') AS s_lesson_start_at,
+            TO_CHAR(s_lesson_end_at, 'YYYY-MM-DD HH24:MI:SS') AS s_lesson_end_at,
             s_lesson_homework_url,
             s_lesson_teacher_id,
             s_lesson_online_lesson_join_url,
             s_lesson_online_lesson_recording_url,
-            TO_CHAR(s_lesson_deleted_at, 'MM-DD-YYYY HH24:MI:SS') AS s_lesson_deleted_at
+            TO_CHAR(s_lesson_deleted_at, 'YYYY-MM-DD HH24:MI:SS') AS s_lesson_deleted_at
         FROM
             l_courses_modules_lessons_streams
         LEFT JOIN
@@ -113,20 +113,20 @@ def e_from_pg_datawarehouse() -> dict:
         LEFT JOIN
             s_lessons USING(h_lesson_id)
     '''
-    df = pd.read_sql(sql=Q, con=pg_datawarehouse().get_engine())
+    df = pd.read_sql(sql=Q, con=pg_datawarehouse().get_engine()).drop_duplicates()
     logging.info(f'Current shape of dataframe is {df.shape}')
     return df.to_dict(orient='list')
 
 
 @task()
-def t_find_new_rows(df_from_datasource: dict, df_from_datawarehouse: dict) -> dict:
+def t_find_new_rows(df_main_to_compare: dict, df_slave_to_compare: dict) -> dict:
     import pandas as pd
 
-    df_from_datasource, df_from_datawarehouse = pd.DataFrame.from_dict(df_from_datasource).drop_duplicates(), pd.DataFrame.from_dict(df_from_datawarehouse).drop_duplicates()
+    df_main_to_compare, df_slave_to_compare = pd.DataFrame.from_dict(df_main_to_compare).drop_duplicates(), pd.DataFrame.from_dict(df_slave_to_compare).drop_duplicates()
 
-    df_merge: pd.DataFrame = df_from_datasource.merge(
-        df_from_datawarehouse,
-        on=df_from_datasource.columns.to_list(),
+    df_merge: pd.DataFrame = df_main_to_compare.merge(
+        df_slave_to_compare,
+        on=df_main_to_compare.columns.to_list(),
         how='left',
         indicator=True
     )
@@ -359,7 +359,7 @@ def to_datawarehouse():
 
     df_from_datasource = e_from_pg_datasource()
     df_from_datawarehouse = e_from_pg_datawarehouse()
-    df_with_new_rows = t_find_new_rows(df_from_datasource=df_from_datasource, df_from_datawarehouse=df_from_datawarehouse)
+    df_with_new_rows = t_find_new_rows(df_main_to_compare=df_from_datasource, df_slave_to_compare=df_from_datawarehouse)
 
     update_h_course = l_update_hubs.override(task_id='l_update_h_course')(df_with_new_rows=df_with_new_rows, h_table_name=PgDataWarehouseResource.H_COURSES_TABLE)
     update_h_module = l_update_hubs.override(task_id='l_update_h_module')(df_with_new_rows=df_with_new_rows, h_table_name=PgDataWarehouseResource.H_MODULES_TABLE)
