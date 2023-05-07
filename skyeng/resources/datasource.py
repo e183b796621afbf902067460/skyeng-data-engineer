@@ -15,10 +15,12 @@ class PgDataSourceResource:
 
     DB_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}'
 
-    @property
-    def db_uri(self) -> str:
+    def _db_uri(self) -> str:
         return self.DB_URL
 
-    @classmethod
-    def get_engine(cls) -> Engine:
-        return create_engine(cls.db_uri)
+    def get_engine(self) -> Engine:
+        return create_engine(self._db_uri())
+
+
+def pg_datasource():
+    return PgDataSourceResource()
