@@ -16,6 +16,8 @@ cd skyeng-data-engineer/
 
 # Deploy
 
+All environment variables already set in [.env](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/.env), so you can just run commands below.
+
 - Became SU:
 ```
 sudo su
