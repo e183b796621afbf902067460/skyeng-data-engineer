@@ -12,7 +12,7 @@ class ChDataWarehouseResource(PgDataSourceResource):
     DB_PASSWORD = quote_plus(os.getenv('CH_DATAMART_PASSWORD', None))
     DB_NAME = os.getenv('CH_DATAMART_DB', None)
 
-    DB_URL = f'clickhouse://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}'
+    DB_URL = f'clickhouse://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}/{DB_NAME}'
 
 
 def ch_datamart():
