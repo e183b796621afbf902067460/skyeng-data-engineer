@@ -131,10 +131,14 @@ def t_find_new_rows(df_main_to_compare: dict, df_slave_to_compare: dict) -> dict
         indicator=True
     )
     df_merge: pd.DataFrame = df_merge[df_merge['_merge'] == 'left_only']
+
+    # if there is no new or updated rows
+    if df_merge.empty:
+        raise AirflowSkipException
     return df_merge.to_dict(orient='list')
 
 
-@task()
+@task(trigger_rule=TriggerRule.ALL_SUCCESS)
 def l_update_hubs(df_with_new_rows: dict, h_table_name: str) -> None:
     import pandas as pd
     from resources.datawarehouse import pg_datawarehouse
@@ -163,17 +167,13 @@ def l_update_hubs(df_with_new_rows: dict, h_table_name: str) -> None:
     df_with_new_rows.to_sql(name=h_table_name, con=dwh.get_engine(), if_exists='append', index=False)
 
 
-@task()
+@task(trigger_rule=TriggerRule.ALL_SUCCESS)
 def e_hubs_pk_from_datawarehouse(df_with_new_rows: dict, h_table_name: str) -> dict:
     import pandas as pd
     from resources.datawarehouse import pg_datawarehouse
 
     dwh = pg_datawarehouse()
     df_with_new_rows: pd.DataFrame = pd.DataFrame.from_dict(df_with_new_rows)
-
-    # if there is no new or updated rows
-    if df_with_new_rows.empty:
-        raise AirflowSkipException
 
     Q = f'''
         SELECT
