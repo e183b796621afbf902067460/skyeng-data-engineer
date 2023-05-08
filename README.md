@@ -48,7 +48,7 @@ docker-compose rm
 </p>
 
 2. 
-  I decided to choose the star schema for my datawarehouse because we don't have a lot of different tables in our datasource, so we can describe business logic correctly by linking all entities in one fact table. Also we can scale our datawarehouse by adding more dimension tables and linking them in the fact table. Another one advantage of this scheme is the speed of modeling.
+  I chose the star schema for my datawarehouse because we don't have many tables in our datasource. This allows us to accurately describe business logic by linking all entities in one fact table. Additionally, we can scale our datawarehouse by adding more dimension tables and linking them in the fact table. Another advantage of this scheme is the speed of modeling.
   
 3. 
   Let me describe few moments. Tasks with `e_` prefix means [extract](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#LL10C5-L10C25) task, `t_` means [transform](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#LL10C5-L10C25) and `l_` means [load](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#LL138C5-L138C18).
