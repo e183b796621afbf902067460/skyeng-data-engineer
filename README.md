@@ -130,7 +130,7 @@ Result query.
 # Improvements
 In this task I cheated a little because the entire infrastructure is deployed on only one instance. Here I would like to add a couple of improvements that can help us turn this setup into a highly loaded distributed data application. 
 
-This is done quite simply, because Apache Airflow involves so-called Celery workers to perform complex computations on different nodes. The workers will receive tasks from the master using an AMQP, such as Redis or RabbitMQ. But in order to communication between workers, we have to store computation's result in a file storage, for example S3. At some point, the number of workers will increase so much and it will be difficult to monitor the state of each of them so K8S will help us to orchestrate the whole amount of workers containers on different nodes.
+This is quite simply, because Apache Airflow involves so-called Celery workers to perform complex computations on different nodes. The workers will receive tasks from the master using an AMQP, such as Redis or RabbitMQ. But in order to communication between workers, we have to store computation's result in a file storage, for example S3. At some point, the number of workers will increase so much and it will be difficult to monitor the state of each of them so K8S will help us to orchestrate the whole amount of workers containers on different nodes.
 
 Also, we can distribute our ClickHouse instance between different nodes to speed up query performance.
 
