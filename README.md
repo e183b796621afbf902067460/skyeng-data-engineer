@@ -58,7 +58,7 @@ docker-compose rm
   
   - DAG starts by extracting data from datasource (`e_from_pg_datasource`) and datawarehouse (`e_from_pg_datawarehouse`). 
   
-  - After that, rows in the both datasets are compared to find new entries (`t_find_new_rows`). 
+  - After that, rows in the both datasets are compared to find new entries (`t_find_new_rows`). But if no entries was found DAG [raise](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#L136) `AirflowSkipException` to skip all upstream tasks. We are totally sure that we won't skip any rows updates because we compare two denormalized dataframes. Sometimes duplicates will occurre but we can filter them by `updated_at` columns.
   
   - When we found new entries we should update the hubs entities in datawarehouse (`l_update_hubs`).
   
@@ -87,3 +87,11 @@ So, we have one more DAG to update datamarts.
   
   - When we found new entries we should update datamart (`l_update_datamart`).
 
+---
+
+<p align="center">
+  <img src="https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/images/dag_history.png" width="1024" class="center">
+</p>
+<p align="center"> DAG History </p>
+
+4.
