@@ -131,10 +131,6 @@ def t_find_new_rows(df_main_to_compare: dict, df_slave_to_compare: dict) -> dict
         indicator=True
     )
     df_merge: pd.DataFrame = df_merge[df_merge['_merge'] == 'left_only']
-
-    # if there is no new or updated rows
-    if df_merge.empty:
-        raise AirflowSkipException
     return df_merge.to_dict(orient='list')
 
 
@@ -164,6 +160,9 @@ def l_update_hubs(df_with_new_rows: dict, h_table_name: str) -> None:
         df_with_new_rows[dwh.H_STREAM_RECORD_SOURCE_COLUMN] = h_record_source
         df_with_new_rows = df_with_new_rows[[dwh.H_STREAM_NAME_COLUMN, dwh.H_STREAM_RECORD_SOURCE_COLUMN]].drop_duplicates()
 
+    # if there is no new or updated rows
+    if df_with_new_rows.empty:
+        raise AirflowSkipException
     df_with_new_rows.to_sql(name=h_table_name, con=dwh.get_engine(), if_exists='append', index=False)
 
 
