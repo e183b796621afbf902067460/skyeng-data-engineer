@@ -95,3 +95,34 @@ So, we have one more DAG to update datamarts.
 <p align="center"> DAG History </p>
 
 4.
+Query to get quantity of lessons in each course.
+```sql
+WITH 
+	h_courses_lessons_grouped AS (
+		SELECT
+			h_course_title,
+			h_lesson_title
+		FROM
+	    	dm_courses_modules_lessons_streams
+		GROUP BY
+			h_course_title,
+			h_lesson_title
+) 
+SELECT 
+	h_course_title AS course_title,
+	COUNT(h_lesson_title) AS lessons_qty
+FROM 
+	h_courses_lessons_grouped
+GROUP BY
+	h_course_title;
+```
+Result query.
+```
+|    course_title   |  lessons_qty  |     
+=====================================
+| Data Analysis     |       6       |
+------
+| Data Science      |       6       |
+------
+| Data Engineering  |       6       |
+```
