@@ -48,7 +48,7 @@ docker-compose rm
 </p>
 
 2. 
-  I decided to choose the star schema for my datawarehouse because we don't have a lot of different tables in our datasource, so we can describe business logic correctly by linking all entities in one fact table. Also we can scale our datawarehouse by adding more dimension tables and linking them in the fact table. Another one advantage of this scheme is the speed of modeling.
+  I chose the star schema for my datawarehouse because we don't have many tables in our datasource. This allows us to accurately describe business logic by linking all entities in one fact table. Additionally, we can scale our datawarehouse by adding more dimension tables and linking them in the fact table. Another advantage of this scheme is the speed of modeling.
   
 3. 
   Let me describe few moments. Tasks with `e_` prefix means [extract](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#LL10C5-L10C25) task, `t_` means [transform](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#LL10C5-L10C25) and `l_` means [load](https://github.com/e183b796621afbf902067460/skyeng-data-engineer/blob/master/skyeng/dags/to_datawarehouse.py#LL138C5-L138C18).
@@ -126,3 +126,12 @@ Result query.
 ------
 | Data Engineering  |       6       |
 ```
+
+# Improvements
+In this task I cheated a little because the entire infrastructure is deployed on only one instance. Here I would like to add a couple of improvements that can help us turn this setup into a highly loaded distributed data application. 
+
+This is quite simply, because Apache Airflow involves so-called Celery workers to perform complex computations on different nodes. The workers will receive tasks from the master using an AMQP, such as Redis or RabbitMQ. But in order to communication between workers, we have to store computation's result in a file storage, for example S3. At some point, the number of workers will increase so much and it will be difficult to monitor the state of each of them so K8S will help us to orchestrate the whole amount of workers containers on different nodes.
+
+Also, we can distribute our ClickHouse instance between different nodes to speed up query performance.
+
+This setup resolve us to horizontal scaling which will help us to configure infrastructure costs better and increase the whole infrastructure performance.
