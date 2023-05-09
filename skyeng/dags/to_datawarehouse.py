@@ -12,6 +12,7 @@ def e_from_pg_datasource() -> dict:
     import logging
     from resources.datasource import pg_datasource
 
+    # query to extract all data from our datasource
     Q = '''
         SELECT
             course.title AS h_course_title,
@@ -52,8 +53,12 @@ def e_from_pg_datasource() -> dict:
         LEFT JOIN
             stream_module_lesson ON stream_module.id = stream_module_lesson.stream_module_id
     '''
+
+    # pass query and datasource engine to pd.read_sql() and drop any duplicates
     df = pd.read_sql(sql=Q, con=pg_datasource().get_engine()).drop_duplicates()
     logging.info(f'Current shape of dataframe is {df.shape}')
+
+    # serialize dataframe to json
     return df.to_dict(orient='list')
 
 
@@ -63,6 +68,7 @@ def e_from_pg_datawarehouse() -> dict:
     import logging
     from resources.datawarehouse import pg_datawarehouse
 
+    # query to extract all data from our datawarehouse
     Q = '''
         SELECT
             h_course_title,
@@ -113,29 +119,42 @@ def e_from_pg_datawarehouse() -> dict:
         LEFT JOIN
             s_lessons USING(h_lesson_id)
     '''
+
+    # pass query and datawarehouse engine to pd.read_sql() and drop any duplicates
     df = pd.read_sql(sql=Q, con=pg_datawarehouse().get_engine()).drop_duplicates()
     logging.info(f'Current shape of dataframe is {df.shape}')
+
+    # serialize dataframe to json
     return df.to_dict(orient='list')
 
 
+# we use here df_main_to_compare and df_slave_to_compare
+# because we will reuse that task in another DAG named to_datamart
+# to compare rows in two dataframes
 @task()
 def t_find_new_rows(df_main_to_compare: dict, df_slave_to_compare: dict) -> dict:
     import pandas as pd
 
+    # create dataframes from json
     df_main_to_compare, df_slave_to_compare = pd.DataFrame.from_dict(df_main_to_compare).drop_duplicates(), pd.DataFrame.from_dict(df_slave_to_compare).drop_duplicates()
 
+    # merge datasource_df (main) and datawarehouse_df (slave)
+    # to find rows which only appeared in left one (in main dataframe)
     df_merge: pd.DataFrame = df_main_to_compare.merge(
         df_slave_to_compare,
         on=df_main_to_compare.columns.to_list(),
         how='left',
         indicator=True
     )
+
+    # and filtering rows to find new or updated rows
     df_merge: pd.DataFrame = df_merge[df_merge['_merge'] == 'left_only']
 
     # if there is no new or updated rows
     if df_merge.empty:
         raise AirflowSkipException
 
+    # serialize dataframe with new or updated rows to json
     return df_merge.to_dict(orient='list')
 
 
@@ -144,13 +163,22 @@ def l_update_hubs(df_with_new_rows: dict, h_table_name: str) -> None:
     import pandas as pd
     from resources.datawarehouse import pg_datawarehouse
 
+    # datawarehouse database engine
     dwh = pg_datawarehouse()
+
+    # key to set record source in datawarehouse
     h_record_source = 'pg_datasource'
 
+    # create dataframe from json
     df_with_new_rows: pd.DataFrame = pd.DataFrame.from_dict(df_with_new_rows)
 
+    # filter based on hub table in datawarehouse because we will reuse that task many times
     if h_table_name == dwh.H_COURSES_TABLE:
+
+        # set record source
         df_with_new_rows[dwh.H_COURSE_RECORD_SOURCE_COLUMN] = h_record_source
+
+        # filter based on columns which only appears in hub in datawarehouse
         df_with_new_rows = df_with_new_rows[[dwh.H_COURSE_TITLE_COLUMN, dwh.H_COURSE_RECORD_SOURCE_COLUMN]].drop_duplicates()
 
     if h_table_name == dwh.H_MODULES_TABLE:
@@ -165,6 +193,7 @@ def l_update_hubs(df_with_new_rows: dict, h_table_name: str) -> None:
         df_with_new_rows[dwh.H_STREAM_RECORD_SOURCE_COLUMN] = h_record_source
         df_with_new_rows = df_with_new_rows[[dwh.H_STREAM_NAME_COLUMN, dwh.H_STREAM_RECORD_SOURCE_COLUMN]].drop_duplicates()
 
+    # load or update hub table using df.to_sql()
     df_with_new_rows.to_sql(name=h_table_name, con=dwh.get_engine(), if_exists='append', index=False)
 
 
@@ -173,9 +202,13 @@ def e_hubs_pk_from_datawarehouse(df_with_new_rows: dict, h_table_name: str) -> d
     import pandas as pd
     from resources.datawarehouse import pg_datawarehouse
 
+    # datawarehouse engine
     dwh = pg_datawarehouse()
+
+    # create dataframe from json
     df_with_new_rows: pd.DataFrame = pd.DataFrame.from_dict(df_with_new_rows)
 
+    # prepared query pattern to extract hub's primary key from datawarehouse
     Q = f'''
         SELECT
             {{}},
@@ -186,10 +219,18 @@ def e_hubs_pk_from_datawarehouse(df_with_new_rows: dict, h_table_name: str) -> d
             {{}} IN ({{}})
     '''
 
+    # same filter based on hub table in datawarehouse
     if h_table_name == dwh.H_COURSES_TABLE:
+
+        # hub table only has business key column
+        # we choose only that column and drop any duplicates
+        # and transform dataframe to list to pass it in formatted SQL query
         values = df_with_new_rows[dwh.H_COURSE_TITLE_COLUMN].drop_duplicates().tolist()
+
+        # prepare our list of new values for formatted SQL query
         prepared_values = ', '.join(f"'{value}'" for value in values)
 
+        # formatting SQL query
         Q = Q.format(dwh.H_COURSE_ID_COLUMN, dwh.H_COURSE_TITLE_COLUMN, dwh.H_COURSE_TITLE_COLUMN, prepared_values)
 
     if h_table_name == dwh.H_MODULES_TABLE:
@@ -210,7 +251,10 @@ def e_hubs_pk_from_datawarehouse(df_with_new_rows: dict, h_table_name: str) -> d
 
         Q = Q.format(dwh.H_STREAM_ID_COLUMN, dwh.H_STREAM_NAME_COLUMN, dwh.H_STREAM_NAME_COLUMN, prepared_values)
 
+    # extract hub's primary keys from datawarehouse
     df = pd.read_sql(sql=Q, con=dwh.get_engine()).drop_duplicates(subset='business_key')
+
+    # serialize dataframe with primary keys to json
     return df.to_dict(orient='list')
 
 
@@ -219,19 +263,30 @@ def l_update_satellites(df_with_new_rows: dict, df_with_hubs_pk: dict, s_table_n
     import pandas as pd
     from resources.datawarehouse import pg_datawarehouse
 
+    # datawarehouse engine
     dwh = pg_datawarehouse()
+
+    # key to set record source in datawarehouse
     h_record_source = 'pg_datasource'
 
+    # create dataframes with hub's primary keys from jsons
     df_with_new_rows, df_with_hubs_pk = pd.DataFrame.from_dict(df_with_new_rows), pd.DataFrame.from_dict(df_with_hubs_pk)
 
+    # same filter based on satellite table in datawarehouse
     if s_table_name == dwh.S_COURSES_TABLE:
+
+        # set record source
         df_with_new_rows[dwh.S_COURSE_RECORD_SOURCE_COLUMN] = h_record_source
+
+        # update our df with new values from datasource and merge hub's primary keys
         df_with_new_rows = df_with_new_rows.merge(
             df_with_hubs_pk,
             left_on=dwh.H_COURSE_TITLE_COLUMN,
             right_on='business_key',
             how='left'
         )
+
+        # filter based on columns which only appears in satellite in datawarehouse and drop duplicates
         df_with_new_rows = df_with_new_rows[
             [
                 dwh.H_COURSE_ID_COLUMN, dwh.S_COURSE_RECORD_SOURCE_COLUMN,
@@ -292,6 +347,7 @@ def l_update_satellites(df_with_new_rows: dict, df_with_hubs_pk: dict, s_table_n
             ]
         ].drop_duplicates()
 
+    # load or update satellite table using df.to_sql()
     df_with_new_rows.to_sql(name=s_table_name, con=dwh.get_engine(), if_exists='append', index=False)
 
 
@@ -300,13 +356,17 @@ def l_update_links(df_with_new_rows: dict, df_with_h_course_pk: dict, df_with_h_
     import pandas as pd
     from resources.datawarehouse import pg_datawarehouse
 
+    # datawarehouse engine
     dwh = pg_datawarehouse()
 
+    # create dataframe with new or updated values from json
     df_with_new_rows = pd.DataFrame.from_dict(df_with_new_rows)
 
+    # create dataframe with hub's primary keys from json
     df_with_h_course_pk, df_with_h_module_pk = pd.DataFrame.from_dict(df_with_h_course_pk), pd.DataFrame.from_dict(df_with_h_module_pk)
     df_with_h_lesson_pk, df_with_h_stream_pk = pd.DataFrame.from_dict(df_with_h_lesson_pk), pd.DataFrame.from_dict(df_with_h_stream_pk)
 
+    # merge to df with new or updated values hub's primary keys to update link table
     df_with_new_rows = df_with_new_rows\
         .merge(
             df_with_h_course_pk,
@@ -333,6 +393,7 @@ def l_update_links(df_with_new_rows: dict, df_with_h_course_pk: dict, df_with_h_
             how='left'
         )
 
+    # filter based on columns which only appears in link in datawarehouse and drop duplicates
     df_with_new_rows = df_with_new_rows[
         [
             dwh.H_COURSE_ID_COLUMN,
@@ -344,6 +405,7 @@ def l_update_links(df_with_new_rows: dict, df_with_h_course_pk: dict, df_with_h_
         ]
     ].drop_duplicates()
 
+    # load to link table in datawarehouse
     df_with_new_rows.to_sql(name='l_courses_modules_lessons_streams', con=dwh.get_engine(), if_exists='append', index=False)
 
 
