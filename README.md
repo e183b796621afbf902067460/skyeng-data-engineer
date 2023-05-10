@@ -32,7 +32,7 @@ docker-compose up -d --build --force-recreate
 
 
 # Exit
-- To stop and remover all running containers:
+- To stop and remove all running containers:
 ```
 docker-compose down
 ```
